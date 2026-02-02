@@ -1,0 +1,49 @@
+# paquetes básicos para análisis de datos y modelamiento
+dplyr
+ggplot2
+tidyr
+patchwork
+data.table
+readxl
+janitor
+
+# paquetes para series de tiempo
+fpp3
+fable
+tsibbledata
+feasts
+tsibble
+ggtime
+fasster
+tsfeatures
+lubridate
+forecast
+timetk
+prophet
+zoo
+xts
+
+# paquetes de machine learning y deep learning
+randomForest
+xgboost
+lightgbm
+e1071
+mlr3verse
+tidymodels
+
+# paquetes datos
+wbstats
+quantmod
+nycflights13
+gapminder
+Lahman
+ColombiAPI
+Latamverse
+
+# otros paquetes útiles
+IRkernel
+reticulate
+renv
+knitr
+rmarkdown
+GGally

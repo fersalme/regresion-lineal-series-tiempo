@@ -1,0 +1,300 @@
+---
+title: "Introducción a los modelos de regresión y series de Tiempo"
+author: "Fernando Salcedo Mejía Eco, Ms"
+affiliation: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
+date: "Junio 2024"
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    transition: fade
+    scrollable: true
+    code-fold: true
+    embed-resources: true
+    echo: true
+    logo: src/img/logo_utb.png
+    footer: "UTB-ETD | Programa de Ciencia de Datos"
+title-slide-attributes:
+    data-background-image: src/img/plantilla-inicio.png
+    data-background-opacity: "0.6"
+---
+
+## Contenido del curso
+
+- Concepto y definición de series de tiempo
+- Características y componentes de las series de tiempo
+- Diferencias entre datos transversales y series de tiempo
+- Aplicaciones de las series de tiempo en diferentes campos
+- Panorama general de los modelos de series de tiempo
+
+## Concepto y definición de series de tiempo
+
+::: {.callout-tip title = "Concepto clave"}
+- Una serie de tiempo es una secuencia de datos medidos en puntos sucesivos en el tiempo, generalmente a intervalos uniformes.
+:::
+
+- Las series de tiempo son comunes en diversas disciplinas, incluyendo economía, finanzas, meteorología, ingeniería y ciencias sociales.
+
+- Formalmente $Y_t : \{y_1, y_2, \dots , y_T\}$ donde conocemos los valores de la serie hasta $T$.
+
+## ¿Por qué estudiar series de tiempo?
+
+- El objetivo principal del análisis de series de tiempo es modelar la estructura temporal de los datos para entender su comportamiento y hacer **pronósticos futuros**, clave para una **planificación eficaz y eficiente**.
+
+- Según Hyndman y Athanasopoulos (2021) las condiciones para estudiar las series de tiempo con fines de pronóstico son:
+  - Qué tanto entendemos los factores que mueven la serie
+  - Cuánta información tenemos sobre la serie
+  - Qué tanto se parece el futuro al pasado
+  - Si los pronósticos pueden afectar aquello que intentamos pronosticar. (expectativas)
+
+- Aplicaciones prácticas en diversos campos:
+  - Finanzas: precios de acciones, tasas de interés.
+  - Economía: PIB, inflación, desempleo.
+  - Meteorología: temperaturas, precipitaciones.
+  - Salud pública: tasas de enfermedades, hospitalizaciones.
+  - Industria: control de calidad, mantenimiento predictivo.
+
+## Tipos de datos en series de tiempo
+
+- Datos de alta frecuencia: datos recogidos en intervalos muy cortos (segundos, minutos).
+- Datos de baja frecuencia: datos recogidos en intervalos más largos (días, meses, años).
+- Datos estacionarios: propiedades estadísticas constantes en el tiempo (media, varianza).
+- Datos no estacionarios: propiedades estadísticas que cambian con el tiempo (tendencias, estacionalidad).
+
+## Graficar del PIB de Colombia (1960-2024)
+
+### Python
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import wbgapi as wb
+
+# Descargar datos de la serie de tiempo
+data = wb.data.DataFrame(series= 'NY.GDP.MKTP.CD', economy = 'COL', time=range(1960, 2024), columns='series').reset_index()
+data.columns = ['Año', 'PIB (US$ a precios actuales)']
+
+# Graficar la serie de tiempo
+plt.plot(data['Año'], data['PIB (US$ a precios actuales)'], marker='o')
+plt.title('PIB de Colombia (1960-2024)')
+plt.xlabel('Año')
+plt.ylabel('PIB (US$ a precios actuales)')
+plt.xticks(rotation=90)
+plt.grid()
+plt.show()
+```
+
+### R
+```{r}
+library(wbstats)
+library(ggplot2)
+
+# Descargar datos de la serie de tiempo
+data <- wb_data(indicator = 'NY.GDP.MKTP.CD', country = 'COL', start_date = 1960, end_date = 2024)
+colnames(data) <- c('Año', 'PIB (US$ a precios actuales)')
+
+# Graficar la serie de tiempo
+ggplot(data, aes(x = Año, y = `PIB (US$ a precios actuales)`)) +
+    geom_line() +
+    geom_point() +
+    labs(title = 'PIB de Colombia (1960-2024)', x = 'Año', y = 'PIB (US$ a precios actuales)') +
+    theme_minimal()
+```
+
+## Características y componentes de las series de tiempo
+
+::: {.callout-tip title = "Concepto clave"}
+- Las series de tiempo pueden descomponerse en varios componentes principales:
+- Tendencia: dirección general a largo plazo de la serie. Puede ser creciente, decreciente o constante.
+- Estacionalidad: patrones que se repiten en intervalos regulares (diarios, mensuales, anuales). Está asociada a factores climáticos, sociales o económicos esperados.
+- Ciclos: fluctuaciones a largo plazo que no son de naturaleza estacional. Usualmente asociadas a ciclos económicos.
+- Ruido: variabilidad aleatoria e impredecible en los datos.
+:::
+
+- La forma como se relacionan estos componentes determina la estructura de la serie de tiempo y guía la elección de modelos adecuados para su análisis.
+- Tenemos una forma general para representar una serie de tiempo:
+- Aditiva: $Y_t = T_t + S_t + C_t + e_t$
+- Multiplicativa: $Y_t = T_t \times S_t \times C_t \times e_t$ en términos logarítmicos se convierte en aditiva.
+- Donde $T_t$ es la tendencia, $S_t$ es la estacionalidad, $C_t$ son los ciclos y $e_t$ es el ruido.
+
+## Estacionalidad en series de tiempo
+
+- La estacionalidad es un patrón que se repite en intervalos regulares dentro de una serie de tiempo.
+- Ejemplos comunes de estacionalidad incluyen:
+  - Ventas minoristas que aumentan durante la temporada navideña.
+  - Aumento de la demanda de energía durante los meses de verano o invierno.
+  - Fluctuaciones en la agricultura debido a las estaciones del año.
+- La estacionalidad puede ser diaria, semanal, mensual o anual, dependiendo del contexto de la serie de tiempo.
+
+## Ejemplos de series de tiempo con diferentes comportamiento temporal
+
+![](https://otexts.com/fpppy/nbs/02-graphics_files/figure-html/fourexamples-output-1.png){width=80%}
+
+
+## Media móvil para estimar tendencia
+
+:::{.callout-tip title = "Concepto clave"}
+- La media móvil es una técnica sencilla para suavizar una serie de tiempo y estimar su componente de tendencia. La media móvil ayuda a reducir la variabilidad de corto plazo y resaltar la tendencia subyacente en los datos.
+:::
+- Se calcula promediando los valores de la serie en una ventana móvil de tamaño fijo.
+- Fórmula de la media móvil simple (SMA) de orden $k$:
+- $SMA_t = \frac{1}{k} \sum_{i=0}^{k-1} Y_{t-i}$
+- Donde $SMA_t$ es el valor de la media móvil en el tiempo $t$, $Y_{t-i}$ son los valores de la serie en los últimos $k$ períodos.
+
+| Tiempo |**Serie original**|**Media móvil (k=3)**|**Media móvil (k=5)**|
+| 1 |  10 |  -  |  -  |
+| 2 |  12 |  -  |  -  |
+| 3 |  13 |  (10 + 12 + 13)/3 = 11.67  |  -  |
+| 4 |  12 |  (12 + 13 + 12)/3 = 12.33  |  -  |
+| 5 |  14 |  (13 + 12 + 14)/3 = 12.33  |  (10 + 12 + 13 + 12 + 14)/5 = 12.20   |
+| 6 |  15 |   (12 + 14 + 15)/3 = 13.67   |   (12 + 13 + 12 + 14 + 15)/5 = 13.20   |
+| 7 |  16 |   (14 + 15 + 16)/3 = 15.00   |   (13 + 12 + 14 + 15 + 16)/5 = 14.00   |
+| 8 |  18 |   (15 + 16 + 18)/3 = 16.33   |   (12 + 13 + 14 + 15 + 16)/5 = 14.00   |
+
+## Ejemplo de media móvil en Python
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import yfinance as yf
+
+# Descargar datos de la serie de tiempo
+df = yf.download('AAPL', start='2010-01-01', end='2024-12-31', progress=False)
+df = df['Close']
+df.index = pd.to_datetime(df.index)
+
+# Calcular medias móviles
+df['Media_movil_k3'] = df['AAPL'].rolling(window=3).mean()
+df['Media_movil_k5'] = df['AAPL'].rolling(window=5).mean()
+
+# Graficar la serie original y las medias móviles
+plt.figure(figsize=(10, 6))
+plt.plot(df.index, df, label='Serie original', color='blue')
+plt.plot(df.index, df['Media_movil_k3'], label='Media móvil (k=3)', color='orange')
+plt.plot(df.index, df['Media_movil_k5'], label='Media móvil (k=5)', color='green')
+plt.title('Media Móvil de Apple (AAPL)')
+plt.xlabel('Fecha')
+plt.ylabel('Precio de cierre (USD)')
+plt.legend()
+plt.show()
+
+```
+
+## Métodos para descomponer series de tiempo
+
+- Descomposición clásica: separa la serie en sus componentes aditivos o multiplicativos utilizando medias móviles.
+- STL (Seasonal and Trend decomposition using Loess): método robusto que utiliza regresión local para estimar tendencia y estacionalidad.
+- X-12-ARIMA: desarrollado por la Oficina del Censo de EE.UU., combina modelos ARIMA con descomposición estacional.
+- SEATS (Signal Extraction in ARIMA Time Series): desarrollado por el Banco de España, utiliza modelos ARIMA para extraer componentes de la serie.
+
+## Descomposición clásica de series de tiempo aditivas
+
+- La descomposición clásica de una serie $Y_t$ implica los siguientes pasos:
+  - Estimar la tendencia utilizando una media móvil. $T_t = SMA_k(Y_t)$
+  - Calcular la serie **sin tendencia** restando la tendencia de la serie original. $Y_t - T_t$
+  - Estimar la estacionalidad $S_t$ promedia los valores sin tendencia para cada período estacional (meses, trimestres, etc.).
+  - Calcular los residuos restando la tendencia y la estacionalidad de la serie original. $e_t = Y_t - T_t - S_t$
+
+## Descomposición clásica de series de tiempo multiplicativas
+
+- La descomposición clásica multiplicativa de una serie $Y_t$ implica los siguientes pasos:
+  - Estimar la tendencia utilizando una media móvil. $T_t = SMA_k(Y_t)$
+  - Calcular la serie **sin tendencia** dividiendo la serie original por la tendencia. $Y_t / T_t$
+  - Estimar la estacionalidad $S_t$ promedia los valores sin tendencia para cada período estacional (meses, trimestres, etc.).
+  - Calcular los residuos dividiendo la serie original por la tendencia y la estacionalidad. $e_t = Y_t / (T_t \times S_t)$
+
+## Ejemplo práctico de descomposición de series de tiempo
+
+- Utilizaremos datos históricos de precios de acciones de Apple (AAPL) desde 2010 hasta 2024 para ilustrar la descomposición de una serie de tiempo en sus componentes principales: tendencia, estacionalidad y ruido.
+
+## Ejemplo descomposición de la serie de tiempo python
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import yfinance as yf
+from statsmodels.tsa.seasonal import STL
+
+# Descargar datos de la serie de tiempo
+apple_data = yf.download('AAPL', start='2010-01-01', end='2024-12-31', progress=False)
+apple_close = apple_data['Close']
+apple_close.index = pd.to_datetime(apple_close.index)
+
+# Descomponer la serie de tiempo
+stl = STL(apple_close, period=252)  # Asumiendo 252 días hábiles en un año
+result = stl.fit()
+
+# Preparar datos para graficar
+list_data = {'Original': apple_close, 'Tendencia': result.trend, 'Estacionalidad': result.seasonal, 'Residuos': result.resid}
+colors = ['blue', 'orange', 'green', 'red']
+
+# Graficar la descomposición
+fig, axes = plt.subplots(4, 1, sharex=True, figsize=(8, 6))
+for i, (key, value) in enumerate(list_data.items()):
+    axes[i].plot(value, label=key, color=colors[i])
+    axes[i].legend(loc='upper left')
+plt.xlabel('Fecha')
+plt.show()
+
+```
+
+## Regresión Lineal: Definición
+
+::: {.callout-tip title = "Concepto clave"}
+La regresión es una herramienta estadística utilizada para modelar y analizar la relación entre una variable dependiente y una o más variables independientes.
+:::
+
+- La regresión es una herramienta que permite **estimar** la media condicional a una o más variables de una variable dependiente ($Y$) dado un conjunto de otras variables llamadas regresoras, variables condicionales o covariables ($X$).
+
+- Tenemos $n$ obervaciones de una variable de interés $Y$ y un set de $k$ covariables $X_{1}, X_{2}, ..., X_{k}$. El modelo lineal para $Y$ será:
+
+$$
+E(Y|\mathbf{X}) = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \dots + \beta_k X_k + \varepsilon
+$$
+
+**Donde:**
+
+- $E(Y|\mathbf{X})$ es el valor esperado de $Y$ dado el conjunto de covariables $\mathbf{X}$
+- $\beta_k$ estima el cambio promedio esperado en $Y$ ante cambios en $X_k$
+- $\beta_0$ es el intercepto de la regresión
+- $\varepsilon$ errores de estimación
+
+## Esquema visual de una regresión lineal
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Linear_regression.svg/1200px-Linear_regression.svg.png){width=60%}
+
+## Diferentes tipos de covariables, diferente significado de $\beta_k$
+
+- Si tanto $Y$ como $X$ son continuos
+  $$\beta_k = \frac{\Delta Y}{\Delta X_k}$$
+  $\beta_k$ = El cambio promedio esperado en $Y$ ante un cambio en $X$
+
+- Si $Y$ es númerica y $X$ es dicotómica
+  $$\beta_k = E(Y|X = 1) - E(Y|X = 0)$$
+  $\beta_K$ = Es la diferencia promedio esperada en $Y$ cuando $X = 1$ respecto a $X = 0$
+
+## Diferencias entre una regresión y una serie de tiempo
+
+- Las regresiones se centran en modelar la relación entre variables, mientras que las series de tiempo se enfocan en analizar datos secuenciales a lo largo del tiempo.
+- Las regresiones pueden utilizar datos transversales o de series de tiempo, pero las series de tiempo siempre implican una dimensión temporal.
+- Las series de tiempo requieren considerar la autocorrelación y la estacionalidad, aspectos que no son relevantes en regresiones estándar.
+- Las técnicas de modelado y análisis difieren entre ambos enfoques, con métodos específicos para cada uno.
+
+## Resumen de la sesión
+- Las series de tiempo son secuencias de datos medidos en intervalos regulares a lo largo del tiempo, y pueden descomponerse en componentes como tendencia, estacionalidad, ciclos y ruido.
+- La estacionalidad es un patrón recurrente en los datos que ocurre en intervalos regulares, y es importante identificarla para un análisis adecuado.
+- La media móvil es una técnica útil para suavizar series de tiempo y estimar la tendencia subyacente.
+- La descomposición de series de tiempo puede realizarse mediante métodos clásicos o avanzados como STL, X-12-ARIMA y SEATS.
+- La regresión lineal es una herramienta estadística para modelar la relación entre una variable dependiente y una o más variables independientes.
+- Las regresiones y las series de tiempo tienen enfoques y técnicas diferentes, aunque pueden complementarse en el análisis de datos temporales.
+
+## Actividad 1
+- Descargar datos históricos de precios de acciones de Microsoft (MSFT) desde 2010 hasta 2024 utilizando la librería `yfinance` en Python o `tq_get` en R.
+- Calcular y graficar la media móvil de 10 y 30 días para los precios de cierre.
+- Descomponer la serie de tiempo utilizando el método STL y graficar los componentes resultantes: tendencia, estacionalidad y residuos.
+- Interpretar los resultados obtenidos y discutir cómo la estacionalidad y la tendencia afectan los precios de las acciones de Microsoft.
+
+## Actividad 2
+- Ir a la página web del Banco de la República de Colombia y descargar los datos históricos de la tasa de desempleo mensual desde 2000 hasta 2024.
+- Utilizar Python o R para graficar la serie de tiempo de la tasa de desempleo.
+- Aplicar una media móvil de 12 meses para suavizar la serie y estimar la tendencia.
+- Descomponer la serie utilizando el método STL y analizar los componentes de tendencia, estacionalidad y residuos.
+- Discutir las implicaciones de los patrones observados en la tasa de desempleo para la economía colombiana.

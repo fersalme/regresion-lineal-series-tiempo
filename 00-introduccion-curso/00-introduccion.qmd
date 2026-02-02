@@ -1,0 +1,104 @@
+---
+title: "Modelos de Regresión y Series de Tiempo"
+author: "Fernando Salcedo Mejía Eco, Ms"
+affiliation: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
+date: "Junio 2024"
+description: "Presentación introductoria sobre modelos de regresión y series de tiempo."
+categories: ["Presentaciones", "Ciencia de Datos", "Modelos de Regresión", "Series de Tiempo"]
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    transition: fade
+    scrollable: true
+    code-fold: true
+    embed-resources: true
+    logo: src/img/logo_utb.png
+    footer: "UTB-ETD | Programa de Ciencia de Datos"
+title-slide-attributes:
+    data-background-image: src/img/plantilla-inicio.png
+    data-background-opacity: "0.6"
+---
+
+## Bienvenida
+-  ¡Bienvenidos al curso de Modelos de Regresión y Series de Tiempo!
+-  Instructor: Fernando Salcedo Mejía Eco, Ms
+-  Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos
+-  Fecha: Junio 2024
+
+## Acerca del curso
+- Objetivo: Introducir los conceptos fundamentales de los modelos de regresión, series de tiempo y las habilidades técnicas y prácticas modernas para su aplicación.
+- Metodología: Combinación de teoría y práctica con ejemplos en R y Python.
+
+## Objetivos de aprendizaje
+
+- Formular modelos de regresión lineal, bondad de ajuste, evaluar supuestos e interpretación de resultados.
+- Detectar componentes de tendencia, estacionalidad y ciclos en series de tiempo, aplicar transformaciones de estacionariedad y modelos ARIMA.
+- Ajustar y diagnosticar modelos de volatilidad (ARCH/GARCH) para datos financieros.
+- Comparar y seleccionar modelos utilizando criterios de información (AIC, BIC) y validación cruzada.
+- Trabajo colaborativo en un proyecto final integrador de regresión y series de tiempo usando R o Python. Comunicación efectiva de resultados para audiencias técnicas y no técnicas.
+
+## Contenido del curso
+
+- Introducción a los modelos de regresión y series de Tiempo
+- Fundamentos de regresión y modelos estacionarios
+- Modelos ARMA y ARIMA
+- Modelos de series temporales no estacionarias
+- Modelos de suavizado exponencial y pronósticos
+- Modelos de volatilidad (ARCH/GARCH)
+- Indentificación, estimación y diagnóstico de modelos
+- Modelos de intervención y detencción de Valores atípicos
+- Modelos de Predicción Avanzados con IA : LSTM y Prophet
+- Proyecto final integrador
+
+## Recursos adicionales
+- Material del curso disponible en GitHub: [Repositorio del curso](https://github.com/fersalme/regresion-lineal-series-tiempo)
+- **Lecturas recomendadas disponible en biblioteca de la universidad y páginas web:**
+* **Enders, Walter (2004).** *Applied econometric time series*. Wiley.
+* **Ao, Sio-Iong (2010).** *Applied time series analysis and innovative computing*. Springer.
+* **Palit, Ajoy K. (2005).** *Computational intelligence in time series forecasting: theory and engineering applications*. Springer.
+* **Golyandina, Nina (2020).** *Singular Spectrum Analysis for Time Series*. Springer Berlin Heidelberg.
+* **Ghysels, Eric (2001).** *The econometric analysis of seasonal time series*. Cambridge University.
+* **Box, George E. P. (1994).** *Time series analysis forecasting and control*. Prentice-Hall.
+* **IntechOpen (2024).** *Time Series Analysis: Recent Advances, New Perspectives and Applications*.
+* **Liu, Timina (2020).** *Time Series Analysis Using SAS Enterprise Guide*. Springer Singapore.
+* **Cipra, Tomas (2020).** *Time Series in Economics and Finance*. Springer International Publishing.
+* **Franses, Philip Hans (1998).** *Time series models for business and economic forecasting*. Cambridge University Press.
+* **Hyndman, R.J., & Athanasopoulos, G. (2021)** *Forecasting: principles and practice, 3rd edition, OTexts: Melbourne, Australia. Available at: OTexts.com/fpp3.*
+* **Hyndman, R.J., Athanasopoulos, G., Garza, A., Challu, C., Mergenthaler, M., & Olivares, K.G. (2025).** Forecasting: Principles and Practice, the Pythonic Way. OTexts: Melbourne, Australia. Available at: OTexts.com/fpppy.
+
+## Evaluación
+- **Participación en clase y ejercicios prácticos en clases: 30%**
+    - Por cada hora de clase una actividad grupales o individuales.
+- **Exámenes parciales: 40%**
+    - Dos exámenes parciales durante el curso.
+- **Proyecto final integrador: 30%**
+    - Comienza en el tercer cohorte.
+    - Desarrollo de un proyecto final que integre los conceptos aprendidos en el curso.
+    - Presentación y defensa del proyecto en una feria de datos.
+
+## Políticas del curso
+- Asistencia: Se espera asistencia regular a las clases y participación activa.
+- Entrega de trabajos: Todos los trabajos deben entregarse en las fechas establecidas.
+- Honestidad académica: Se espera que todos los estudiantes mantengan los más altos estándares de integridad académica. El plagio y la copia no serán tolerados.
+- Uso de software: Se utilizarán R y Python en Jupyter Notebooks (.ipynb) para prácticas y proyectos del curso.
+- Entregas de trabajos y proyectos en PDF y HTML generados desde Jupyter Notebooks (.ipynb).
+- Uso de IA Generativa: El uso de herramientas de IA generativa está permitido para apoyo en la comprensión de conceptos y generación de código, siempre y cuando se cite adecuadamente y no se utilice para la realización completa de tareas o exámenes.
+
+## Paquetes de software requeridos
+- R y Python
+- Paquetes están listados en los archivos `r-requirements.txt` y `py-requirements.txt` en el repositorio del curso.
+- Se recomienda crear un entorno virtual para instalar los paquetes necesarios si estás en tu pc. Si no usar **colab**.
+- Python : Crea un entorno con :
+    - pip : `python -m venv utb-series-tiempo` y actívalo con `source utb-series-tiempo/bin/activate` (Linux/Mac) o `.\utb-series-tiempo\Scripts\activate` (Windows). Luego, para instalar los paquetes usa  `pip install -r py-requirements.txt` para instalar paquetes desde `py-requirements.txt`.
+    - conda : `conda create --name utb-series-tiempo python=3.13` y actívalo con `conda activate utb-series-tiempo`. Luego, para instalar los paquetes usa  `pip install -r py-requirements.txt` para instalar paquetes desde `py-requirements.txt`.
+- Levantar JupyterLab con `jupyter lab` en la terminal desde el entorno virtual. 
+- R : Usar `install.packages(grep("^#|^\\s*$", readLines("r-requirements.txt"), value = TRUE, invert = TRUE))` para instalar paquetes desde `r-requirements.txt`.
+- Para usar R dentro de JupyterLab ejecuta desde la consola `R -e "IRkernel::installspec()"` después de activar el entorno virtual.
+
+## Información de contacto
+- Microsoft-Teams y correo electrónico : fsalcedo@utb.edu.co
+- Horario de atención a estudiantes: Martes y Jueves de 3:00 PM a 5:00 PM por Microsoft-Teams.
+
+## ¡Gracias por su atención!
+
