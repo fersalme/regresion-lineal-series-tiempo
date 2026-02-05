@@ -1,11 +1,11 @@
 ---
 title: "Introducción a los modelos de regresión y series de Tiempo"
 author: "Fernando Salcedo Mejía Eco, Ms"
-affiliation: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
-date: "Junio 2024"
+afi: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
+date: "Febrero 2026"
 format:
   revealjs:
-    theme: simple
+    theme: [default, src/theme/style.scss]
     slide-number: true
     transition: fade
     scrollable: true
@@ -61,43 +61,41 @@ title-slide-attributes:
 - Datos estacionarios: propiedades estadísticas constantes en el tiempo (media, varianza).
 - Datos no estacionarios: propiedades estadísticas que cambian con el tiempo (tendencias, estacionalidad).
 
-## Graficar del PIB de Colombia (1960-2024)
-
-### Python
+## Graficar del PIB de Colombia (1960-2024) Python
 ```{python}
 import pandas as pd
 import matplotlib.pyplot as plt
 import wbgapi as wb
 
-# Descargar datos de la serie de tiempo
 data = wb.data.DataFrame(series= 'NY.GDP.MKTP.CD', economy = 'COL', time=range(1960, 2024), columns='series').reset_index()
 data.columns = ['Año', 'PIB (US$ a precios actuales)']
 
-# Graficar la serie de tiempo
-plt.plot(data['Año'], data['PIB (US$ a precios actuales)'], marker='o')
-plt.title('PIB de Colombia (1960-2024)')
+data.plot(x='Año', y='PIB (US$ a precios actuales)', kind='line', marker='o', color='steelblue')
+plt.title('Producto Interno Bruto (PIB) de Colombia (1960-2024)')
 plt.xlabel('Año')
-plt.ylabel('PIB (US$ a precios actuales)')
-plt.xticks(rotation=90)
+plt.ylabel('PIB en dólares estadounidenses')
 plt.grid()
 plt.show()
 ```
 
-### R
+## Graficar del PIB de Colombia (1960-2024) R
 ```{r}
 library(wbstats)
 library(ggplot2)
 
 # Descargar datos de la serie de tiempo
 data <- wb_data(indicator = 'NY.GDP.MKTP.CD', country = 'COL', start_date = 1960, end_date = 2024)
-colnames(data) <- c('Año', 'PIB (US$ a precios actuales)')
+data <- data[, c('date', 'NY.GDP.MKTP.CD')]
+colnames(data) <- c('Año', 'PIB')
 
-# Graficar la serie de tiempo
-ggplot(data, aes(x = Año, y = `PIB (US$ a precios actuales)`)) +
-    geom_line() +
-    geom_point() +
-    labs(title = 'PIB de Colombia (1960-2024)', x = 'Año', y = 'PIB (US$ a precios actuales)') +
-    theme_minimal()
+# Crear el gráfico de línea
+ggplot(data, aes(x = Año, y = PIB)) +
+  geom_line(color = 'steelblue') +
+  geom_point(color = 'steelblue') +
+  labs(title = 'Producto Interno Bruto (PIB) de Colombia (1960-2024)',
+       x = 'Año',
+       y = 'PIB en dólares estadounidenses') +
+       theme_bw()
 ```
 
 ## Características y componentes de las series de tiempo
@@ -140,7 +138,9 @@ ggplot(data, aes(x = Año, y = `PIB (US$ a precios actuales)`)) +
 - $SMA_t = \frac{1}{k} \sum_{i=0}^{k-1} Y_{t-i}$
 - Donde $SMA_t$ es el valor de la media móvil en el tiempo $t$, $Y_{t-i}$ son los valores de la serie en los últimos $k$ períodos.
 
+
 | Tiempo |**Serie original**|**Media móvil (k=3)**|**Media móvil (k=5)**|
+|-----|------------------|----------------------|----------------------|
 | 1 |  10 |  -  |  -  |
 | 2 |  12 |  -  |  -  |
 | 3 |  13 |  (10 + 12 + 13)/3 = 11.67  |  -  |
@@ -164,18 +164,51 @@ df.index = pd.to_datetime(df.index)
 # Calcular medias móviles
 df['Media_movil_k3'] = df['AAPL'].rolling(window=3).mean()
 df['Media_movil_k5'] = df['AAPL'].rolling(window=5).mean()
+df['Media_movil_k15'] = df['AAPL'].rolling(window=15).mean()
 
 # Graficar la serie original y las medias móviles
 plt.figure(figsize=(10, 6))
-plt.plot(df.index, df, label='Serie original', color='blue')
-plt.plot(df.index, df['Media_movil_k3'], label='Media móvil (k=3)', color='orange')
-plt.plot(df.index, df['Media_movil_k5'], label='Media móvil (k=5)', color='green')
+plt.plot(df.index, df['AAPL'], label='Precio de cierre', color='blue')
+plt.plot(df.index, df['Media_movil_k3'], label='Media móvil k=3', color='red')
+plt.plot(df.index, df['Media_movil_k5'], label='Media móvil k=5', color='green')
+plt.plot(df.index, df['Media_movil_k15'], label='Media móvil k=15', color='purple')
 plt.title('Media Móvil de Apple (AAPL)')
 plt.xlabel('Fecha')
 plt.ylabel('Precio de cierre (USD)')
 plt.legend()
+plt.grid()
 plt.show()
+```
 
+## Ejemplo de media móvil en R
+```{r}
+library(tidyquant)
+library(ggplot2)
+library(dplyr)
+library(zoo)
+# Descargar datos de la serie de tiempo
+apple_data <- tq_get("AAPL", from = "2010-01-01", to = "2024-12-31")
+# Calcular medias móviles
+apple_data <- apple_data %>%
+  arrange(date) %>%
+  mutate(Media_movil_k3 = rollmean(adjusted, k = 3, fill = NA, align = "right"),
+         Media_movil_k5 = rollmean(adjusted, k = 5, fill = NA, align = "right"),
+         Media_movil_k15 = rollmean(adjusted, k = 15, fill = NA, align = "right"))
+
+# Graficar la serie original y las medias móviles
+ggplot(apple_data, aes(x = date)) +
+  geom_line(aes(y = adjusted, color = "Precio de cierre")) +
+  geom_line(aes(y = Media_movil_k3, color = "Media móvil k=3")) +
+  geom_line(aes(y = Media_movil_k5, color = "Media móvil k=5")) +
+  geom_line(aes(y = Media_movil_k15, color = "Media móvil k=15")) +
+  labs(title = "Media Móvil de Apple (AAPL)",
+       x = "Fecha",
+       y = "Precio de cierre (USD)") +
+  scale_color_manual(values = c("Precio de cierre" = "blue",
+                                  "Media móvil k=3" = "red",
+                                  "Media móvil k=5" = "green",
+                                  "Media móvil k=15" = "purple")) +
+  theme_bw()
 ```
 
 ## Métodos para descomponer series de tiempo
@@ -227,7 +260,7 @@ list_data = {'Original': apple_close, 'Tendencia': result.trend, 'Estacionalidad
 colors = ['blue', 'orange', 'green', 'red']
 
 # Graficar la descomposición
-fig, axes = plt.subplots(4, 1, sharex=True, figsize=(8, 6))
+fig, axes = plt.subplots(4, 1, sharex=True, figsize=(12, 8))
 for i, (key, value) in enumerate(list_data.items()):
     axes[i].plot(value, label=key, color=colors[i])
     axes[i].legend(loc='upper left')
@@ -236,7 +269,24 @@ plt.show()
 
 ```
 
-## Regresión Lineal: Definición
+## Ejemplo descomposición de la serie de tiempo R
+```{r}
+library(tidyquant)
+library(ggplot2)
+library(forecast)
+# Descargar datos de la serie de tiempo
+apple_data <- tq_get("AAPL", from = "2010-01-01", to = "2024-12-31")
+apple_close <- apple_data$adjusted
+date_index <- apple_data$date
+# Descomponer la serie de tiempo
+ts_apple <- ts(apple_close, frequency = 252, start = min(date_index))  # Asumiendo 252 días hábiles en un año
+decomp <- stl(ts_apple, s.window = "periodic")
+
+# Graficar la descomposición
+autoplot(decomp)
+```
+
+## Introducción a los modelos de regresión
 
 ::: {.callout-tip title = "Concepto clave"}
 La regresión es una herramienta estadística utilizada para modelar y analizar la relación entre una variable dependiente y una o más variables independientes.
@@ -259,7 +309,15 @@ $$
 
 ## Esquema visual de una regresión lineal
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Linear_regression.svg/1200px-Linear_regression.svg.png){width=60%}
+```{r}
+# | echo: false
+# fig-cap: "Ejemplo de regresión lineal simple"
+set.seed(123)
+x <- rnorm(100, mean = 50, sd = 10)
+y <- 2 * x + rnorm(100, mean = 0, sd = 10) + rnorm(100)
+plot(x, y, main = "Ejemplo de Regresión Lineal", xlab = "Variable Independiente (X)", ylab = "Variable Dependiente (Y)")
+abline(lm(y ~ x), col = "blue")
+```
 
 ## Diferentes tipos de covariables, diferente significado de $\beta_k$
 

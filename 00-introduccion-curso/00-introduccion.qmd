@@ -1,20 +1,21 @@
 ---
 title: "Modelos de Regresión y Series de Tiempo"
 author: "Fernando Salcedo Mejía Eco, Ms"
-affiliation: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
+afi: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
 date: "Junio 2024"
 description: "Presentación introductoria sobre modelos de regresión y series de tiempo."
 categories: ["Presentaciones", "Ciencia de Datos", "Modelos de Regresión", "Series de Tiempo"]
 format:
   revealjs:
-    theme: simple
+    theme: [default, src/theme/style.scss]
     slide-number: true
     transition: fade
     scrollable: true
-    code-fold: true
     embed-resources: true
     logo: src/img/logo_utb.png
     footer: "UTB-ETD | Programa de Ciencia de Datos"
+    toc: true
+    toc-depth: 2
 title-slide-attributes:
     data-background-image: src/img/plantilla-inicio.png
     data-background-opacity: "0.6"
@@ -24,7 +25,6 @@ title-slide-attributes:
 -  ¡Bienvenidos al curso de Modelos de Regresión y Series de Tiempo!
 -  Instructor: Fernando Salcedo Mejía Eco, Ms
 -  Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos
--  Fecha: Junio 2024
 
 ## Acerca del curso
 - Objetivo: Introducir los conceptos fundamentales de los modelos de regresión, series de tiempo y las habilidades técnicas y prácticas modernas para su aplicación.
@@ -51,19 +51,15 @@ title-slide-attributes:
 - Modelos de Predicción Avanzados con IA : LSTM y Prophet
 - Proyecto final integrador
 
-## Recursos adicionales
+## Recursos adicionales {.smaller}
 - Material del curso disponible en GitHub: [Repositorio del curso](https://github.com/fersalme/regresion-lineal-series-tiempo)
-- **Lecturas recomendadas disponible en biblioteca de la universidad y páginas web:**
 * **Enders, Walter (2004).** *Applied econometric time series*. Wiley.
 * **Ao, Sio-Iong (2010).** *Applied time series analysis and innovative computing*. Springer.
 * **Palit, Ajoy K. (2005).** *Computational intelligence in time series forecasting: theory and engineering applications*. Springer.
-* **Golyandina, Nina (2020).** *Singular Spectrum Analysis for Time Series*. Springer Berlin Heidelberg.
 * **Ghysels, Eric (2001).** *The econometric analysis of seasonal time series*. Cambridge University.
 * **Box, George E. P. (1994).** *Time series analysis forecasting and control*. Prentice-Hall.
 * **IntechOpen (2024).** *Time Series Analysis: Recent Advances, New Perspectives and Applications*.
-* **Liu, Timina (2020).** *Time Series Analysis Using SAS Enterprise Guide*. Springer Singapore.
 * **Cipra, Tomas (2020).** *Time Series in Economics and Finance*. Springer International Publishing.
-* **Franses, Philip Hans (1998).** *Time series models for business and economic forecasting*. Cambridge University Press.
 * **Hyndman, R.J., & Athanasopoulos, G. (2021)** *Forecasting: principles and practice, 3rd edition, OTexts: Melbourne, Australia. Available at: OTexts.com/fpp3.*
 * **Hyndman, R.J., Athanasopoulos, G., Garza, A., Challu, C., Mergenthaler, M., & Olivares, K.G. (2025).** Forecasting: Principles and Practice, the Pythonic Way. OTexts: Melbourne, Australia. Available at: OTexts.com/fpppy.
 
@@ -76,6 +72,8 @@ title-slide-attributes:
     - Comienza en el tercer cohorte.
     - Desarrollo de un proyecto final que integre los conceptos aprendidos en el curso.
     - Presentación y defensa del proyecto en una feria de datos.
+- **Nota cohorte:** $Puntaje final = 0.3 \times Talleres + 0.4 \times Exámenes + 0.3 \times Proyecto\ final$
+- **Nota final del curso:** Promedio de las notas de los tres cohortes.
 
 ## Políticas del curso
 - Asistencia: Se espera asistencia regular a las clases y participación activa.
