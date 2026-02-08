@@ -1,0 +1,61 @@
+---
+title: "Fundamentos de Regresión y Modelos Estacionarios"
+author: "Fernando Salcedo Mejía Eco, Ms"
+afi: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
+date: "Febrero 2026"
+format:
+  revealjs:
+    theme: [default, src/theme/style.scss]
+    slide-number: true
+    transition: fade
+    scrollable: true
+    code-fold: true
+    embed-resources: true
+    echo: true
+    logo: src/img/logo_utb.png
+    footer: "UTB-ETD | Programa de Ciencia de Datos"
+title-slide-attributes:
+    data-background-image: src/img/plantilla-inicio.png
+    data-background-opacity: "0.6"
+---
+
+## Contenido del curso
+
+::: {.callout-tip}
+En esta unidad se abordan los principios de los modelos de regresión aplicados a las series temporales. Se introducen los
+conceptos de estacionariedad, autocorrelación y autocovarianza, y cómo estos son fundamentales para trabajar con modelos de
+series temporales.
+:::
+- Regresión simple y múltiple en el contexto de las series temporales
+- Estacionariedad en series temporales
+- Funciones de autocorrelación y autocovarianza
+- Análisis de la autocorrelación y parcial autocorrelación en series temporales
+- Modelos autoregresivos (AR) y medias móviles (MA)
+
+## Regresión lineal en series de tiempo
+
+::: {.callout-tip title = "Concepto clave"}
+Podemos aplicar el concepto de regresión para pronosticar una variable $y_t$ asumiendo que tiene una relación esperada con otra en el tiempo $x_t$.
+:::
+
+$$
+y_t = \beta_0 + \beta_1 x_{1, t} + \beta_2 x_{2, t} + \dots + \beta_k x_{k, t} + \varepsilon_t
+$$
+
+```{r}
+# | echo: true
+# | fig-cap: "Ejemplo de regresión lineal simple"
+set.seed(123)
+x <- rnorm(100, mean = 50, sd = 10)
+y <- 2 * x + rnorm(100, mean = 0, sd = 10) + rnorm(100)
+plot(x, y, main = "Ejemplo de Regresión Lineal", xlab = "Variable Independiente (X)", ylab = "Variable Dependiente (Y)")
+abline(lm(y ~ x), col = "blue")
+```
+
+## Estimador Minimos Cuadrados Ordinarios (MCO)
+
+- El estimador MCO 
+
+## El modelo macronomico del crecimento
+
+- El Producto Interno Bruto (PIB) es la agregación del

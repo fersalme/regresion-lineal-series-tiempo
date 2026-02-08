@@ -20,9 +20,9 @@ fpppy
 
 # paquetes para machine learning y deep learning
 scikit-learn
-prophet
-tensorflow
-keras
+#prophet
+#tensorflow
+#keras
 
 # datos financieros y económicos
 wbgapi
