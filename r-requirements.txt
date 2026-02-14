@@ -1,10 +1,9 @@
 # paquetes básicos para análisis de datos y modelamiento
-dplyr
-ggplot2
-tidyr
+tidyverse
 patchwork
 data.table
 readxl
+writexl
 janitor
 
 # paquetes para series de tiempo
