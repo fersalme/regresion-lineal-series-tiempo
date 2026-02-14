@@ -694,7 +694,7 @@ $$
 - Repita el paso 1 para cada $t=1,\dots,T$.
 - Calcule el MSE (Error Cuadrático Medio) a partir de $e_{1}^*,\dots,e_{T}^*$​. A este resultado lo llamaremos CV.
 
-## Ejercicio 5:
+## Ejercicio 6:
 
 - Usando el modelo macroeconómico del cambio en el consumo de Estados Unidos, compara el rendimiento de todas la combinaciones (16 modelos en total) de covariables disponibles en términos de $Ingreso_t$, $Industria_t$, $Ahorro_t$, $Desempleo_t$​.
 - Calcular : AIC, BIC, CV, RMSE, MAE,	MAPE, MASE para cada modelo.
