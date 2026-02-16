@@ -102,7 +102,7 @@ plt.show()
 La estacionariedad significa que las propiedades estadísticas (media, varianza, etc) **permanecen constantes a lo largo del tiempo**, por lo que las series temporales con tendencias o estacionalidad no son estacionarias.
 :::
 
-### ¿Por qué es importante?
+**¿Por qué es importante?**
 
 ::: {.incremental}
 - Los modelos ARMA requieren estacionariedad
@@ -110,9 +110,9 @@ La estacionariedad significa que las propiedades estadísticas (media, varianza,
 - Permite hacer inferencia y pronóstico
 :::
 
-- **¿Qué serie es estacionaria?**
+## ¿Qué serie es estacionaria?
 
-![](src/img/stationary-1.png)
+![](src/img/stationary-1.png){width="900px"}
 
 
 ## Detectar las series no estacionarias
@@ -155,7 +155,9 @@ Un proceso $\{Y_t\}$ es **débilmente estacionario** si:
 
 ![](src/img/acfstationary-1.png)
 
-$$\rho_k = \frac{\gamma_k}{\gamma_0} = \frac{Cov(Y_t, Y_{t-k})}{Var(Y_t)}$$
+$$
+\rho_k = \frac{\gamma_k}{\gamma_0} = \frac{Cov(Y_t, Y_{t-k})}{Var(Y_t)}
+$$
 
 **Propiedades**:
 
@@ -167,7 +169,9 @@ $$\rho_k = \frac{\gamma_k}{\gamma_0} = \frac{Cov(Y_t, Y_{t-k})}{Var(Y_t)}$$
 
 La **PACF** mide la correlación entre $Y_t$ y $Y_{t-k}$ eliminando el efecto de los rezagos intermedios.
 
-$$\phi_{kk} = Corr(Y_t, Y_{t-k} | Y_{t-1}, ..., Y_{t-k+1})$$
+$$
+\phi_{kk} = Corr(Y_t, Y_{t-k} | Y_{t-1}, ..., Y_{t-k+1})
+$$
 
 
 ## Prueba de Dickey-Fuller aumentada (ADF)
@@ -181,13 +185,13 @@ $$
 $$
 
 - $\Delta y_t$​: Representa la primera diferencia de la serie en el tiempo t, definida como yt​−yt−1​.
-- $ \alpha$: Es el término constante o intercepto (drift).
-- $ \beta t$: Es el coeficiente de la tendencia lineal en el tiempo.
+- $\alpha$: Es el término constante o intercepto (drift).
+- $\beta t$: Es el coeficiente de la tendencia lineal en el tiempo.
 - $\gamma$: Es el coeficiente de interés principal. Se prueba la hipótesis nula H0​:$\gamma=0$ (existe raíz unitaria) frente a la alternativa H1​:$\gamma < 0$ (la serie es estacionaria).
 - $\sum_{i=1}^{k} \delta_i \Delta y_{t-i}$: Son los términos de rezagos (lags) de la variable diferenciada. El propósito de estos términos es eliminar la autocorrelación en los residuos.
 - $\varepsilon_t$​: Es el término de error (ruido blanco).
 
-- **Prueba de hipótesis que la serie es estacionaria.**
+**Prueba de hipótesis que la serie es estacionaria.**
 
 - Hipótesis nula (HO): La serie tiene una raíz unitaria, no es estacionaria.
 - Hipótesis alternativa (HA): La serie no tiene raíz unitaria, es estacionaria.
@@ -204,9 +208,9 @@ $$
 y_t = \xi t + r_t + \varepsilon_t
 $$
 
-- $r_t$​ es una caminata aleatoria: rt​=rt−1​+ut​, donde ut​∼iid(0,σu2​).
-- $\xi t $ es una tendencia determinista.
-- $ \varepsilon_t$​ es un error estacionario.
+- $r_t$​ es una caminata aleatoria: $r_t​=r_{t−1​}+u_t$​, donde $u_t \sim N(0,\sigma^2​)$.
+- $\xi t$ es una tendencia determinista.
+- $\varepsilon_t$​ es un error estacionario.
 
 - En esta prueba, la hipótesis nula es que la serie es estacionaria. Por consiguiente, los p-values pequeños (por ejemplo, inferiores a 0.05) rechazan la hipótesis nula y sugieren que es necesario diferenciar.
 
@@ -282,11 +286,7 @@ plt.show()
 - Corregir si no es estacionaria con la diferenciación.
 
 
----
-
 # Modelos AR(p)
-
----
 
 ## Modelo Autoregresivo de Orden p
 
