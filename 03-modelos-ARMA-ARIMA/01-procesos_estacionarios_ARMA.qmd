@@ -20,14 +20,34 @@ title-slide-attributes:
     data-background-opacity: "0.6"
 ---
 
+
+# Introducción
+
+## ¿Qué son los modelos ARIMA?
+
+- ARIMA (AutoRegressive Integrated Moving Average) son una familia de modelos **para series de tiempo estacionarias** ampliamente reconocidos y utilizados para la predicción de series temporales.
+
+- Combinan tres componentes fundamentales:
+  - **AR**: Autoregresivo (dependencia del pasado)
+  - **I**: Integración (diferenciación para estacionariedad)
+  - **MA**: Medias Móviles (dependencia de errores pasados)
+
+- El elemento autorregresivo (AR) relaciona el valor actual con valores pasados (lags)
+- El elemento de media móvil (MA) asume que el error de predicción es una combinación lineal de los errores de predicción pasados. 
+- Por último, el componente integrado (I) indica que se han aplicado diferencias entre valores consecutivos de la serie original (y este proceso de diferenciación puede haberse realizado más de una vez).
+
+**Notación**: ARIMA(p, d, q)
+
+- p = orden autoregresivo
+- d = orden de diferenciación
+- q = orden de medias móviles
+
 ## Contenido
 
 1. **Proceso Estocástico y Estacionariedad**
 2. **Modelos AR(p)** - Procesos Autoregresivos
 3. **Modelos MA(q)** - Medias Móviles
 4. **Modelos ARMA(p,q)** - Combinación
-
----
 
 # Conceptos Fundamentales
 
@@ -38,47 +58,49 @@ $$
 {y_1, y_2, \dots, y_T}
 $$
 
-- Considere por ejemplo una colección $T$ de valores $\varepsilon_t$ aleatorios e independientes identicamente distribuidas
+- Considere por ejemplo una colección $T$ de valores $\varepsilon_t$ aleatorios e independientes idénticamente distribuidas
 
 $$
-{varepsilon_1, varepsilon_3, \dots, varepsilon_T} \\
+{\varepsilon_1, \varepsilon_3, \dots, \varepsilon_T} \\
 \varepsilon_t \sim N(0, \sigma^2)
 $$
 
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
 
-:::: {.columns}
-::: {.column width="50%"}
-**Características**:
+t_sim = np.arange(100)  # 100 pasos
+n_series = range(1, 4)     # 3 series (1, 2, 3)
+random_y = {}
 
-- Media: $\mu_t = E[Y_t]$
-- Varianza: $\sigma^2_t = Var(Y_t)$
-- Autocovarianza: $\gamma(t,s) = Cov(Y_t, Y_s)$
-- Autocorrelación: $\rho(t,s) = \frac{\gamma(t,s)}{\sqrt{\sigma^2_t\sigma^2_s}}$
-:::
+for i in n_series:
+    y_t = []
+    for t in range(len(t_sim)):
+        e = np.random.normal(0, 1)
+        if t == 0:
+            y_t.append(e)
+        else:
+            y_t.append(y_t[t - 1] + e)
+    random_y[f"y_{i}"] = y_t
 
-::: {.column width="50%"}
-**Tipos**:
+# 2. Graficamos
+fig, ax = plt.subplots(figsize=(10, 5))
+for key, value in random_y.items():
+    ax.plot(t_sim, value, label=key)
+ax.set_title('Distintas realizaciones Y_t')
+ax.set_xlabel('Tiempo')
+ax.set_ylabel('y_t')
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.show()
 
-- Determinísticos
-- Estocásticos
-- Estacionarios
-- No estacionarios
-:::
-::::
-
----
+```
 
 ## Estacionariedad
 
-### Estacionariedad Débil (o de segundo orden)
-
-Un proceso $\{Y_t\}$ es **débilmente estacionario** si:
-
-1. $E[Y_t] = \mu$ (constante) $\forall t$
-2. $Var(Y_t) = \sigma^2$ (constante) $\forall t$
-3. $Cov(Y_t, Y_{t+k}) = \gamma_k$ (solo depende del rezago $k$)
-
-. . .
+::: {.callout-important}
+La estacionariedad significa que las propiedades estadísticas (media, varianza, etc) **permanecen constantes a lo largo del tiempo**, por lo que las series temporales con tendencias o estacionalidad no son estacionarias.
+:::
 
 ### ¿Por qué es importante?
 
@@ -88,31 +110,58 @@ Un proceso $\{Y_t\}$ es **débilmente estacionario** si:
 - Permite hacer inferencia y pronóstico
 :::
 
----
+- **¿Qué serie es estacionaria?**
+
+![](src/img/stationary-1.png)
+
+
+## Detectar las series no estacionarias
+
+Existen varios métodos para evaluar si una serie temporal es estacionaria o no estacionaria:
+
+- Inspección visual de la serie temporal: inspeccionando visualmente el gráfico de la serie temporal, es posible identificar la presencia de una tendencia o estacionalidad notables. Si se observan estos patrones, es probable que la serie no sea estacionaria.
+
+- Valores estadísticos: calcular estadísticos como la media y la varianza, de varios segmentos de la serie. Si existen diferencias significativas, la serie no es estacionaria.
+
+- Pruebas estadísticas: utilizar test estadísticos como la prueba Dickey-Fuller aumentada o la prueba Kwiatkowski-Phillips-Schmidt-Shin (KPSS).
+
+## Diferenciación
+
+::: {.callout-important}
+La diferenciación puede ayudar a estabilizar la media de una serie temporal eliminando cambios en el nivel de una serie temporal y, por lo tanto, eliminando (o reduciendo) la tendencia y la estacionalidad.
+:::
+
+$$
+\Delta y_t = y_t - y_{t-1}
+$$
+
+- Esta es conocida como diferenciación de primer orden. Este proceso se puede repetir si es necesario hasta que se alcance la estacionariedad deseada.
+
+![](src/img/google-stocks-estacionario.png)
+
+### Estacionariedad Débil (o de segundo orden)
+
+Un proceso $\{Y_t\}$ es **débilmente estacionario** si:
+
+1. $E[Y_t] = \mu$ (constante) $\forall t$
+2. $Var(Y_t) = \sigma^2$ (constante) $\forall t$
+3. $Cov(Y_t, Y_{t+k}) = \gamma_k$ (solo depende del rezago $k$)
 
 ## Función de Autocorrelación (ACF)
 
+- Además del gráfico temporal de los datos, el gráfico de la ACF también es útil para identificar series temporales no estacionarias. 
+- En una serie temporal estacionaria, la ACF **se reducirá a cero con relativa rapidez**, mientras que en datos no estacionarios la ACF **disminuye lentamente**. 
+- Además, para datos no estacionarios, el valor de $\rho_1$ suele ser alto y positivo.
+
+![](src/img/acfstationary-1.png)
+
 $$\rho_k = \frac{\gamma_k}{\gamma_0} = \frac{Cov(Y_t, Y_{t-k})}{Var(Y_t)}$$
 
-:::: {.columns}
-::: {.column width="50%"}
 **Propiedades**:
 
 - $\rho_0 = 1$
 - $-1 \leq \rho_k \leq 1$
 - $\rho_k = \rho_{-k}$ (simétrica)
-:::
-
-::: {.column width="50%"}
-**Utilidad**:
-
-- Identificar patrones temporales
-- Diagnosticar modelos
-- Determinar orden MA
-:::
-::::
-
----
 
 ## Función de Autocorrelación Parcial (PACF)
 
@@ -120,16 +169,124 @@ La **PACF** mide la correlación entre $Y_t$ y $Y_{t-k}$ eliminando el efecto de
 
 $$\phi_{kk} = Corr(Y_t, Y_{t-k} | Y_{t-1}, ..., Y_{t-k+1})$$
 
-. . .
 
-**Clave para identificación**:
+## Prueba de Dickey-Fuller aumentada (ADF)
 
-- **ACF**: identifica orden q (MA)
-- **PACF**: identifica orden p (AR)
+::::: {.callout-important}
+La prueba Dickey-Fuller aumentada considera como hipótesis nula que la **serie temporal tiene una raíz unitaria**, una característica frecuente de las series temporales no estacionarias. 
+:::
+
+$$
+\Delta y_t = \alpha + \beta t + \gamma y_{t-1} + \sum_{i=1}^{k} \delta_i \Delta y_{t-i} + \varepsilon_t
+$$
+
+- $\Delta y_t$​: Representa la primera diferencia de la serie en el tiempo t, definida como yt​−yt−1​.
+- $ \alpha$: Es el término constante o intercepto (drift).
+- $ \beta t$: Es el coeficiente de la tendencia lineal en el tiempo.
+- $\gamma$: Es el coeficiente de interés principal. Se prueba la hipótesis nula H0​:$\gamma=0$ (existe raíz unitaria) frente a la alternativa H1​:$\gamma < 0$ (la serie es estacionaria).
+- $\sum_{i=1}^{k} \delta_i \Delta y_{t-i}$: Son los términos de rezagos (lags) de la variable diferenciada. El propósito de estos términos es eliminar la autocorrelación en los residuos.
+- $\varepsilon_t$​: Es el término de error (ruido blanco).
+
+- **Prueba de hipótesis que la serie es estacionaria.**
+
+- Hipótesis nula (HO): La serie tiene una raíz unitaria, no es estacionaria.
+- Hipótesis alternativa (HA): La serie no tiene raíz unitaria, es estacionaria.
+
+Dado que la hipótesis nula supone la presencia de una raíz unitaria, el p-value obtenido debe ser inferior a un nivel de significación determinado, a menudo fijado en 0.05, para rechazar esta hipótesis. Este resultado indica la estacionariedad de la serie. 
+
+## Prueba Kwiatkowski-Phillips-Schmidt-Shin (KPSS).
+
+::::: {.callout-note}
+La prueba KPSS comprueba si una serie temporal es estacionaria en torno a una media o una tendencia lineal. 
+:::
+
+$$
+y_t = \xi t + r_t + \varepsilon_t
+$$
+
+- $r_t$​ es una caminata aleatoria: rt​=rt−1​+ut​, donde ut​∼iid(0,σu2​).
+- $\xi t $ es una tendencia determinista.
+- $ \varepsilon_t$​ es un error estacionario.
+
+- En esta prueba, la hipótesis nula es que la serie es estacionaria. Por consiguiente, los p-values pequeños (por ejemplo, inferiores a 0.05) rechazan la hipótesis nula y sugieren que es necesario diferenciar.
+
+## Nota acerca de KPSS y ADF
+
+::::: {.callout-note}
+ - Si bien ambas pruebas se utilizan para comprobar la estacionariedad:
+
+- La prueba KPSS se centra en la presencia de tendencias. Un p-value bajo indica la no estacionariedad debida a una tendencia.
+- La prueba ADF se centra en la presencia de una raíz unitari. Un p-value bajo indica que la serie temporal no tiene una raíz unitaria, lo que sugiere que podría ser estacionaria.
+
+- Es habitual utilizar ambas pruebas a la vez para comprender mejor las propiedades de estacionariedad de una serie temporal. 
+:::
+
+## Modelo de caminata aleatoria
+
+- El modelo de Caminata Aleatoria (o Random Walk) es uno de los conceptos pilares en el análisis de series de tiempo, especialmente en finanzas y econometría. Se utiliza para describir procesos donde el valor de una variable en el tiempo t depende únicamente de su valor anterior más un componente impredecible (ruido blanco).
+
+$$
+y_t = y_{t-1} + \varepsilon_t.
+$$
+
+
+Los modelos de caminata aleatoria se utilizan ampliamente para datos no estacionarios, en particular datos financieros y económicos. La caminata aleatoria suelen presentar:
+
+- No Estacionariedad: Una caminata aleatoria es el ejemplo clásico de una serie no estacionaria. Su varianza aumenta con el tiempo, lo que significa que a largo plazo la serie se aleja de su origen.
+- Cambios de dirección: Largos periodos de aparentes tendencias al alza o a la baja repentinos e impredecibles
+- Memoria Infinita: Cada choque aleatorio εt​ persiste para siempre en el nivel de la serie. No hay un "regreso a la media".
+- Raíz Unitaria: Si aplicamos la prueba de Dickey-Fuller Aumentada que vimos antes, el coeficiente "\gamma" sería igual a 0, confirmando que la serie tiene una raíz unitaria.
+
+- Los pronósticos de un modelo $y_t$ de paseo aleatorio **son iguales a la última observación**, ya que los movimientos futuros son impredecibles y tienen la misma probabilidad de ser al alza o a la baja. Por lo tanto, el modelo de paseo aleatorio sustenta los pronósticos ingenuos.
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+t_sim = np.arange(100)  # 100 pasos
+n_series = range(1, 4)     # 3 series (1, 2, 3)
+random_y = {}
+
+for i in n_series:
+    y_t = []
+    for t in range(len(t_sim)):
+        e = np.random.normal(0, 1)
+        if t == 0:
+            y_t.append(e)
+        else:
+            y_t.append(y_t[t - 1] + e)
+    random_y[f"y_{i}"] = y_t
+
+# 2. Graficamos
+fig, ax = plt.subplots(figsize=(10, 5))
+for key, value in random_y.items():
+    ax.plot(t_sim, value, label=key)
+ax.set_title('Distintas realizaciones de Caminata Aleatoria Y_t')
+ax.set_xlabel('Tiempo')
+ax.set_ylabel('y_t')
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.show()
+
+```
+
+## Ejercicio 1. Identificar estacionariedad
+
+- Descarga la serie del PIB de Colombia anual y la serie de acciones diarias de Google. A ambas vas a realizar:
+
+- Gráfica la serie temporal.
+- Calcula estadísticas descriptivas básicas.
+- Realiza el ACF diagnostico de la serie.
+- Realiza el test de Dickey-Fuller Aumentado (ADF) para verificar estacionariedad.
+- Interpret el resultado del test ADF: ¿Es la serie estacionaria?
+- Corregir si no es estacionaria con la diferenciación.
+
 
 ---
 
 # Modelos AR(p)
+
+---
 
 ## Modelo Autoregresivo de Orden p
 
@@ -143,7 +300,6 @@ donde:
 - $\phi_1, ..., \phi_p$ son los parámetros autoregresivos
 - $c$ es una constante
 
-. . .
 
 **Interpretación**: El valor actual depende linealmente de sus $p$ valores pasados más un shock aleatorio.
 
@@ -160,8 +316,6 @@ El modelo AR(p) se puede escribir como:
 $$\phi(B) Y_t = c + \varepsilon_t$$
 
 donde $\phi(B) = 1 - \phi_1 B - \phi_2 B^2 - ... - \phi_p B^p$
-
-. . .
 
 **Polinomio característico**: $\phi(z) = 1 - \phi_1 z - \phi_2 z^2 - ... - \phi_p z^p$
 
