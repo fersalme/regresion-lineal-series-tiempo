@@ -1,0 +1,1129 @@
+---
+title: "Modelos ARIMA para Series de Tiempo"
+subtitle: "AR, MA y ARIMA: Teoría y Práctica"
+author: "Fernando Salcedo Mejía Eco, Ms"
+afi: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
+date: "Febrero 2026"
+format:
+  revealjs:
+    theme: [default, src/theme/style.scss]
+    slide-number: true
+    transition: fade
+    scrollable: true
+    code-fold: true
+    embed-resources: true
+    echo: true
+    logo: src/img/logo_utb.png
+    footer: "UTB-ETD | Programa de Ciencia de Datos"
+title-slide-attributes:
+    data-background-image: src/img/plantilla-inicio.png
+    data-background-opacity: "0.6"
+engine: jupyter
+---
+
+# Introducción
+
+## ¿Qué son los modelos ARIMA?
+
+::: {.incremental}
+- **ARIMA**: AutoRegressive Integrated Moving Average
+- Familia de modelos para series de tiempo estacionarias
+- Combinan tres componentes fundamentales:
+  - **AR**: Autoregresivo (dependencia del pasado)
+  - **I**: Integración (diferenciación para estacionariedad)
+  - **MA**: Medias Móviles (dependencia de errores pasados)
+:::
+
+. . .
+
+**Notación**: ARIMA(p, d, q)
+
+- p = orden autoregresivo
+- d = orden de diferenciación
+- q = orden de medias móviles
+
+---
+
+## Roadmap de la Presentación
+
+1. **Proceso Estocástico y Estacionariedad**
+2. **Modelos AR(p)** - Procesos Autoregresivos
+3. **Modelos MA(q)** - Medias Móviles
+4. **Modelos ARMA(p,q)** - Combinación
+5. **Modelos ARIMA(p,d,q)** - Con Integración
+6. **Metodología Box-Jenkins**
+7. **Implementación en R y Python**
+
+---
+
+# Conceptos Fundamentales
+
+## Proceso Estocástico
+
+Un **proceso estocástico** $\{Y_t\}$ es una colección de variables aleatorias indexadas en el tiempo.
+
+:::: {.columns}
+::: {.column width="50%"}
+**Características**:
+
+- Media: $\mu_t = E[Y_t]$
+- Varianza: $\sigma^2_t = Var(Y_t)$
+- Autocovarianza: $\gamma(t,s) = Cov(Y_t, Y_s)$
+- Autocorrelación: $\rho(t,s) = \frac{\gamma(t,s)}{\sqrt{\sigma^2_t\sigma^2_s}}$
+:::
+
+::: {.column width="50%"}
+**Tipos**:
+
+- Determinísticos
+- Estocásticos
+- Estacionarios
+- No estacionarios
+:::
+::::
+
+---
+
+## Estacionariedad
+
+### Estacionariedad Débil (o de segundo orden)
+
+Un proceso $\{Y_t\}$ es **débilmente estacionario** si:
+
+1. $E[Y_t] = \mu$ (constante) $\forall t$
+2. $Var(Y_t) = \sigma^2$ (constante) $\forall t$
+3. $Cov(Y_t, Y_{t+k}) = \gamma_k$ (solo depende del rezago $k$)
+
+. . .
+
+### ¿Por qué es importante?
+
+::: {.incremental}
+- Los modelos ARMA requieren estacionariedad
+- Propiedades estadísticas constantes en el tiempo
+- Permite hacer inferencia y pronóstico
+:::
+
+---
+
+## Función de Autocorrelación (ACF)
+
+$$\rho_k = \frac{\gamma_k}{\gamma_0} = \frac{Cov(Y_t, Y_{t-k})}{Var(Y_t)}$$
+
+:::: {.columns}
+::: {.column width="50%"}
+**Propiedades**:
+
+- $\rho_0 = 1$
+- $-1 \leq \rho_k \leq 1$
+- $\rho_k = \rho_{-k}$ (simétrica)
+:::
+
+::: {.column width="50%"}
+**Utilidad**:
+
+- Identificar patrones temporales
+- Diagnosticar modelos
+- Determinar orden MA
+:::
+::::
+
+---
+
+## Función de Autocorrelación Parcial (PACF)
+
+La **PACF** mide la correlación entre $Y_t$ y $Y_{t-k}$ eliminando el efecto de los rezagos intermedios.
+
+$$\phi_{kk} = Corr(Y_t, Y_{t-k} | Y_{t-1}, ..., Y_{t-k+1})$$
+
+. . .
+
+**Clave para identificación**:
+
+- **ACF**: identifica orden q (MA)
+- **PACF**: identifica orden p (AR)
+
+---
+
+# Modelos AR(p)
+
+## Modelo Autoregresivo de Orden p
+
+### Definición
+
+$$Y_t = c + \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + ... + \phi_p Y_{t-p} + \varepsilon_t$$
+
+donde:
+
+- $\varepsilon_t \sim WN(0, \sigma^2)$ (ruido blanco)
+- $\phi_1, ..., \phi_p$ son los parámetros autoregresivos
+- $c$ es una constante
+
+. . .
+
+**Interpretación**: El valor actual depende linealmente de sus $p$ valores pasados más un shock aleatorio.
+
+---
+
+## Operador de Rezagos
+
+Definimos el **operador de rezago** $B$: $B Y_t = Y_{t-1}$
+
+. . .
+
+El modelo AR(p) se puede escribir como:
+
+$$\phi(B) Y_t = c + \varepsilon_t$$
+
+donde $\phi(B) = 1 - \phi_1 B - \phi_2 B^2 - ... - \phi_p B^p$
+
+. . .
+
+**Polinomio característico**: $\phi(z) = 1 - \phi_1 z - \phi_2 z^2 - ... - \phi_p z^p$
+
+---
+
+## Condición de Estacionariedad
+
+Un proceso AR(p) es **estacionario** si y solo si:
+
+> Todas las raíces del polinomio característico $\phi(z) = 0$ están **fuera** del círculo unitario.
+
+. . .
+
+Equivalentemente: $|\phi_i| < 1$ para todas las raíces.
+
+. . .
+
+**Ejemplo AR(1)**: $Y_t = \phi Y_{t-1} + \varepsilon_t$
+
+- Estacionario si $|\phi| < 1$
+- Si $\phi = 1$: camino aleatorio (no estacionario)
+
+---
+
+## AR(1): Caso Especial
+
+$$Y_t = \phi Y_{t-1} + \varepsilon_t, \quad |\phi| < 1$$
+
+:::: {.columns}
+::: {.column width="50%"}
+**Propiedades**:
+
+- Media: $E[Y_t] = 0$
+- Varianza: $Var(Y_t) = \frac{\sigma^2}{1-\phi^2}$
+- ACF: $\rho_k = \phi^k$ (decaimiento exponencial)
+- PACF: $\phi_{11} = \phi$, $\phi_{kk} = 0$ para $k > 1$
+:::
+
+::: {.column width="50%"}
+**Identificación**:
+
+- ACF: decae gradualmente
+- PACF: corte abrupto después del rezago 1
+:::
+::::
+
+---
+
+## AR(2): Ejemplo
+
+$$Y_t = \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + \varepsilon_t$$
+
+**Condiciones de estacionariedad**:
+
+1. $\phi_1 + \phi_2 < 1$
+2. $\phi_2 - \phi_1 < 1$
+3. $|\phi_2| < 1$
+
+. . .
+
+**Comportamiento de la ACF**:
+
+- Decaimiento exponencial o sinusoidal amortiguado
+- Depende de si las raíces son reales o complejas
+
+---
+
+## Identificación de AR(p)
+
+| Característica | AR(p) |
+|----------------|-------|
+| **ACF** | Decae gradualmente (exponencial o sinusoidal) |
+| **PACF** | Corte abrupto después del rezago p |
+| **Orden** | p = último rezago significativo en PACF |
+
+. . .
+
+**Regla práctica**: Si PACF tiene corte claro en rezago p y ACF decae → AR(p)
+
+---
+
+# Modelos MA(q)
+
+## Modelo de Medias Móviles de Orden q
+
+### Definición
+
+$$Y_t = \mu + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \theta_2 \varepsilon_{t-2} + ... + \theta_q \varepsilon_{t-q}$$
+
+donde:
+
+- $\varepsilon_t \sim WN(0, \sigma^2)$
+- $\theta_1, ..., \theta_q$ son los parámetros de medias móviles
+- $\mu$ es la media del proceso
+
+. . .
+
+**Interpretación**: El valor actual es una combinación lineal de shocks aleatorios actuales y pasados.
+
+---
+
+## Operador de Rezagos para MA
+
+Usando el operador de rezago:
+
+$$Y_t = \mu + \theta(B) \varepsilon_t$$
+
+donde $\theta(B) = 1 + \theta_1 B + \theta_2 B^2 + ... + \theta_q B^q$
+
+. . .
+
+**Importante**: Los modelos MA son **siempre estacionarios** (son combinaciones lineales finitas de ruido blanco).
+
+---
+
+## Condición de Invertibilidad
+
+Un proceso MA(q) es **invertible** si y solo si:
+
+> Todas las raíces del polinomio $\theta(z) = 0$ están **fuera** del círculo unitario.
+
+. . .
+
+**¿Por qué importa?**
+
+- Invertibilidad permite expresar el MA como un AR infinito
+- Necesaria para estimación única de parámetros
+- Garantiza convergencia de algoritmos de estimación
+
+---
+
+## MA(1): Caso Especial
+
+$$Y_t = \varepsilon_t + \theta \varepsilon_{t-1}, \quad |\theta| < 1$$
+
+:::: {.columns}
+::: {.column width="50%"}
+**Propiedades**:
+
+- Media: $E[Y_t] = 0$
+- Varianza: $Var(Y_t) = \sigma^2(1+\theta^2)$
+- ACF: 
+  - $\rho_1 = \frac{\theta}{1+\theta^2}$
+  - $\rho_k = 0$ para $k > 1$
+- PACF: decaimiento exponencial
+:::
+
+::: {.column width="50%"}
+**Identificación**:
+
+- ACF: corte abrupto después del rezago 1
+- PACF: decae gradualmente
+:::
+::::
+
+---
+
+## MA(q): Propiedades Generales
+
+**Autocorrelación**:
+
+$$\rho_k = \begin{cases}
+\frac{\sum_{j=0}^{q-k} \theta_j \theta_{j+k}}{\sum_{j=0}^{q} \theta_j^2} & k = 1, 2, ..., q \\
+0 & k > q
+\end{cases}$$
+
+donde $\theta_0 = 1$.
+
+. . .
+
+**Característica clave**: ACF se anula después del rezago q (memoria finita).
+
+---
+
+## Identificación de MA(q)
+
+| Característica | MA(q) |
+|----------------|-------|
+| **ACF** | Corte abrupto después del rezago q |
+| **PACF** | Decae gradualmente (exponencial o sinusoidal) |
+| **Orden** | q = último rezago significativo en ACF |
+
+. . .
+
+**Regla práctica**: Si ACF tiene corte claro en rezago q y PACF decae → MA(q)
+
+---
+
+# Modelos ARMA(p,q)
+
+## Combinando AR y MA
+
+### Definición
+
+$$Y_t = c + \phi_1 Y_{t-1} + ... + \phi_p Y_{t-p} + \varepsilon_t + \theta_1 \varepsilon_{t-1} + ... + \theta_q \varepsilon_{t-q}$$
+
+. . .
+
+**Forma compacta**:
+
+$$\phi(B) Y_t = c + \theta(B) \varepsilon_t$$
+
+donde:
+
+- $\phi(B) = 1 - \phi_1 B - ... - \phi_p B^p$
+- $\theta(B) = 1 + \theta_1 B + ... + \theta_q B^q$
+
+---
+
+## Condiciones de ARMA(p,q)
+
+Para que un proceso ARMA(p,q) sea válido:
+
+. . .
+
+1. **Estacionariedad**: Raíces de $\phi(z) = 0$ fuera del círculo unitario
+
+2. **Invertibilidad**: Raíces de $\theta(z) = 0$ fuera del círculo unitario
+
+3. **Parsimonia**: No debe haber factores comunes entre $\phi(B)$ y $\theta(B)$
+
+---
+
+## Identificación de ARMA(p,q)
+
+| Modelo | ACF | PACF |
+|--------|-----|------|
+| AR(p) | Decae gradualmente | Corte en rezago p |
+| MA(q) | Corte en rezago q | Decae gradualmente |
+| ARMA(p,q) | Decae gradualmente | Decae gradualmente |
+
+. . .
+
+**Desafío**: Cuando ambas decaen, determinar p y q es más complejo.
+
+**Soluciones**:
+
+- Criterios de información (AIC, BIC)
+- Análisis de residuos
+- Prueba y error informado
+
+---
+
+## Criterios de Información
+
+**AIC (Akaike Information Criterion)**:
+
+$$AIC = -2\log(L) + 2k$$
+
+**BIC (Bayesian Information Criterion)**:
+
+$$BIC = -2\log(L) + k\log(n)$$
+
+donde:
+
+- $L$ = verosimilitud del modelo
+- $k$ = número de parámetros
+- $n$ = tamaño de la muestra
+
+. . .
+
+**Regla**: Seleccionar el modelo con menor AIC/BIC (equilibrio ajuste-parsimonia).
+
+---
+
+# Modelos ARIMA(p,d,q)
+
+## No Estacionariedad e Integración
+
+Muchas series reales no son estacionarias:
+
+- Tendencias
+- Varianza cambiante
+- Patrones estacionales
+
+. . .
+
+**Solución**: Aplicar **diferenciación** para lograr estacionariedad.
+
+$$\nabla Y_t = Y_t - Y_{t-1} = (1-B)Y_t$$
+
+---
+
+## Orden de Integración
+
+Un proceso es **integrado de orden d**, denotado $I(d)$, si:
+
+> Requiere $d$ diferencias para volverse estacionario.
+
+. . .
+
+**Ejemplos**:
+
+- $I(0)$: Serie estacionaria (no requiere diferenciación)
+- $I(1)$: Una diferencia (ej: camino aleatorio, tendencias lineales)
+- $I(2)$: Dos diferencias (raro en la práctica)
+
+---
+
+## Modelo ARIMA(p,d,q)
+
+### Definición Completa
+
+$$\phi(B)(1-B)^d Y_t = c + \theta(B)\varepsilon_t$$
+
+. . .
+
+**Pasos**:
+
+1. Diferenciar $d$ veces: $W_t = (1-B)^d Y_t$
+2. Ajustar ARMA(p,q) a $W_t$: $\phi(B)W_t = c + \theta(B)\varepsilon_t$
+
+. . .
+
+**Notación**: ARIMA(p, d, q)
+
+- p = orden AR
+- d = orden de diferenciación
+- q = orden MA
+
+---
+
+## Ejemplos Importantes
+
+| Modelo | Nombre | Ecuación |
+|--------|--------|----------|
+| ARIMA(0,1,0) | Camino aleatorio | $Y_t = Y_{t-1} + \varepsilon_t$ |
+| ARIMA(0,1,1) | Suavizamiento exponencial simple | $\nabla Y_t = \varepsilon_t + \theta\varepsilon_{t-1}$ |
+| ARIMA(0,2,2) | Suavizamiento exponencial doble | $\nabla^2 Y_t = \varepsilon_t + \theta_1\varepsilon_{t-1} + \theta_2\varepsilon_{t-2}$ |
+| ARIMA(1,1,0) | Crecimiento autorregresivo | $\nabla Y_t = \phi \nabla Y_{t-1} + \varepsilon_t$ |
+
+---
+
+## Determinando d
+
+**Métodos para elegir el orden de diferenciación**:
+
+1. **Inspección visual**: Graficar la serie y sus diferencias
+
+2. **Pruebas de raíz unitaria**:
+   - Test de Dickey-Fuller Aumentado (ADF)
+   - Test KPSS
+   - Test Phillips-Perron
+
+3. **Regla práctica**:
+   - $d = 0$: Serie estacionaria
+   - $d = 1$: Serie con tendencia/no estacionaria en media
+   - $d = 2$: Muy raro (sobrediferenciación es un problema)
+
+---
+
+# Metodología Box-Jenkins
+
+## Ciclo Iterativo para Modelado
+
+::: {.nonincremental}
+1. **Identificación**: Determinar órdenes p, d, q
+2. **Estimación**: Estimar parámetros del modelo
+3. **Diagnóstico**: Validar supuestos del modelo
+4. **Pronóstico**: Si el modelo es adecuado, usar para predicción
+:::
+
+. . .
+
+Si el diagnóstico falla → volver a identificación.
+
+---
+
+## Fase 1: Identificación
+
+### Pasos:
+
+1. **Graficar la serie**: Identificar tendencia, estacionalidad, valores atípicos
+
+2. **Evaluar estacionariedad**:
+   - Visual: serie y ACF
+   - Formal: tests ADF, KPSS
+
+3. **Determinar d**: Número de diferencias necesarias
+
+4. **Determinar p y q**: Analizar ACF y PACF de la serie diferenciada
+
+---
+
+## Guía Rápida: ACF y PACF
+
+```
+┌────────────────┬──────────────────┬──────────────────┐
+│ Modelo         │ ACF              │ PACF             │
+├────────────────┼──────────────────┼──────────────────┤
+│ AR(p)          │ Decae            │ Corte en p       │
+│ MA(q)          │ Corte en q       │ Decae            │
+│ ARMA(p,q)      │ Decae            │ Decae            │
+└────────────────┴──────────────────┴──────────────────┘
+```
+
+**Herramientas**:
+
+- Límites de confianza: $\pm 1.96/\sqrt{n}$
+- Ljung-Box test para significancia conjunta
+
+---
+
+## Fase 2: Estimación
+
+**Métodos de estimación**:
+
+1. **Máxima Verosimilitud (ML)**:
+   - Asume $\varepsilon_t \sim N(0, \sigma^2)$
+   - Óptimo para muestras grandes
+   - Más utilizado en práctica
+
+2. **Mínimos Cuadrados Condicionales (CSS)**:
+   - No asume normalidad
+   - Más simple computacionalmente
+
+3. **Método de Hannan-Rissanen**:
+   - Estimación inicial para algoritmos iterativos
+
+---
+
+## Fase 3: Diagnóstico
+
+### Verificar supuestos sobre residuos $\hat{\varepsilon}_t$:
+
+1. **Ruido blanco**: No autocorrelación
+   - ACF de residuos
+   - Test de Ljung-Box: $H_0$: residuos son ruido blanco
+   
+2. **Normalidad**: (deseable pero no crítico)
+   - Histograma, Q-Q plot
+   - Test de Jarque-Bera, Shapiro-Wilk
+
+3. **Homocedasticidad**: Varianza constante
+   - Gráfico de residuos vs tiempo
+   - Test ARCH/GARCH
+
+---
+
+## Test de Ljung-Box
+
+$$Q_{LB}(h) = n(n+2)\sum_{k=1}^{h}\frac{\hat{\rho}_k^2}{n-k} \sim \chi^2_{h-p-q}$$
+
+donde:
+
+- $\hat{\rho}_k$ = autocorrelación muestral de los residuos en rezago k
+- $h$ = número de rezagos a probar
+- $p, q$ = órdenes del modelo ARIMA
+
+. . .
+
+**Interpretación**:
+
+- $H_0$: Los residuos son ruido blanco
+- Si p-valor > 0.05 → No rechazamos $H_0$ → Modelo adecuado
+
+---
+
+## Fase 4: Pronóstico
+
+Una vez validado el modelo, podemos pronosticar:
+
+$$\hat{Y}_{T+h|T} = E[Y_{T+h} | Y_T, Y_{T-1}, ...]$$
+
+. . .
+
+**Propiedades**:
+
+- Pronósticos óptimos (minimizan MSE)
+- Intervalos de confianza disponibles
+- Incertidumbre aumenta con el horizonte h
+
+. . .
+
+**Evaluación**:
+
+- Validación cruzada
+- Métricas: MAE, RMSE, MAPE
+
+---
+
+# Implementación Práctica
+
+## R: Paquetes Principales
+
+```r
+# Ecosystem tradicional
+library(forecast)     # Modelado ARIMA clásico
+library(tseries)      # Tests de estacionariedad
+library(lmtest)       # Tests de diagnóstico
+
+# Ecosystem moderno (tidyverts)
+library(tsibble)      # Manejo de datos temporales
+library(feasts)       # Visualización y características
+library(fable)        # Modelado y pronóstico
+```
+
+---
+
+## R: Ejemplo Completo con forecast
+
+```r
+# 1. Cargar datos
+library(forecast)
+data <- AirPassengers
+
+# 2. Visualización y ACF/PACF
+plot(data)
+ggtsdisplay(data)
+
+# 3. Identificación automática
+fit <- auto.arima(data, seasonal = FALSE, 
+                  stepwise = FALSE, approximation = FALSE)
+summary(fit)
+
+# 4. Diagnóstico
+checkresiduals(fit)
+
+# 5. Pronóstico
+fc <- forecast(fit, h = 12)
+plot(fc)
+```
+
+---
+
+## R: Ejemplo con fable (tidyverts)
+
+```r
+library(tsibble)
+library(fable)
+library(feasts)
+
+# 1. Convertir a tsibble
+data_ts <- as_tsibble(AirPassengers)
+
+# 2. Exploración
+data_ts %>% autoplot(.vars = value)
+data_ts %>% ACF(value) %>% autoplot()
+
+# 3. Modelado
+fit <- data_ts %>%
+  model(arima = ARIMA(value))
+
+# 4. Diagnóstico
+fit %>% gg_tsresiduals()
+
+# 5. Pronóstico
+fit %>% forecast(h = 12) %>% autoplot(data_ts)
+```
+
+---
+
+## Python: Paquetes Principales
+
+```python
+# Paquetes esenciales
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Análisis de series de tiempo
+from statsmodels.tsa.stattools import adfuller, acf, pacf
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.tsa.arima.model import ARIMA
+
+# Identificación automática
+from pmdarima import auto_arima
+```
+
+---
+
+## Python: Ejemplo Completo
+
+```python
+import pandas as pd
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+import matplotlib.pyplot as plt
+
+# 1. Cargar datos
+data = pd.read_csv('data.csv', index_col='date', parse_dates=True)
+series = data['value']
+
+# 2. Visualización
+series.plot(figsize=(10,4))
+plt.show()
+
+# ACF y PACF
+fig, ax = plt.subplots(1, 2, figsize=(12,4))
+plot_acf(series, lags=40, ax=ax[0])
+plot_pacf(series, lags=40, ax=ax[1])
+plt.show()
+```
+
+---
+
+## Python: Estimación y Diagnóstico
+
+```python
+# 3. Ajustar modelo ARIMA
+model = ARIMA(series, order=(1,1,1))
+fit = model.fit()
+
+# Resumen
+print(fit.summary())
+
+# 4. Diagnóstico
+fit.plot_diagnostics(figsize=(12,8))
+plt.show()
+
+# Test de Ljung-Box
+from statsmodels.stats.diagnostic import acorr_ljungbox
+lb_test = acorr_ljungbox(fit.resid, lags=10, return_df=True)
+print(lb_test)
+```
+
+---
+
+## Python: Identificación Automática
+
+```python
+from pmdarima import auto_arima
+
+# Búsqueda automática del mejor modelo
+auto_model = auto_arima(series, 
+                        start_p=0, start_q=0,
+                        max_p=5, max_q=5,
+                        d=None,  # Determina d automáticamente
+                        seasonal=False,
+                        stepwise=True,
+                        suppress_warnings=True,
+                        information_criterion='aic',
+                        trace=True)
+
+print(auto_model.summary())
+```
+
+---
+
+## Python: Pronóstico
+
+```python
+# Pronóstico
+n_periods = 12
+forecast_result = fit.forecast(steps=n_periods)
+
+# Visualización
+plt.figure(figsize=(10,4))
+plt.plot(series.index, series, label='Observado')
+forecast_index = pd.date_range(start=series.index[-1], 
+                               periods=n_periods+1, 
+                               freq='MS')[1:]
+plt.plot(forecast_index, forecast_result, 
+         label='Pronóstico', color='red')
+plt.legend()
+plt.show()
+
+# Con intervalo de confianza
+forecast_df = fit.get_forecast(steps=n_periods).summary_frame()
+print(forecast_df)
+```
+
+---
+
+# Casos Especiales y Extensiones
+
+## ARIMA Estacional: SARIMA
+
+Para series con estacionalidad:
+
+$$ARIMA(p,d,q) \times (P,D,Q)_s$$
+
+donde:
+
+- $(p,d,q)$ = componente no estacional
+- $(P,D,Q)$ = componente estacional
+- $s$ = período estacional (12 para mensual, 4 para trimestral)
+
+. . .
+
+**Ejemplo**: ARIMA(1,1,1)(1,1,1)₁₂ para datos mensuales con tendencia y estacionalidad.
+
+---
+
+## ARIMAX: Modelos con Variables Exógenas
+
+$$\phi(B)(1-B)^d Y_t = \beta X_t + \theta(B)\varepsilon_t$$
+
+. . .
+
+**Casos de uso**:
+
+- Incorporar variables explicativas (precio, temperatura, etc.)
+- Intervenciones conocidas (cambios de política)
+- Eventos especiales (días festivos)
+
+. . .
+
+```r
+# R
+fit <- Arima(y, order=c(1,1,1), xreg=X)
+
+# Python
+model = ARIMA(y, order=(1,1,1), exog=X)
+```
+
+---
+
+## Modelos de Función de Transferencia
+
+Generalizan ARIMAX para capturar dinámicas más complejas:
+
+$$Y_t = \frac{\omega(B)}{\delta(B)} X_{t-b} + \frac{\theta(B)}{\phi(B)} \varepsilon_t$$
+
+. . .
+
+**Aplicaciones**:
+
+- Análisis de impacto de políticas
+- Relaciones causa-efecto con rezagos
+- Marketing mix modeling
+
+---
+
+## ARCH/GARCH: Modelando Volatilidad
+
+Cuando la varianza de los residuos cambia en el tiempo (heterocedasticidad):
+
+**ARCH(q)**: 
+$$\sigma_t^2 = \alpha_0 + \alpha_1 \varepsilon_{t-1}^2 + ... + \alpha_q \varepsilon_{t-q}^2$$
+
+**GARCH(p,q)**:
+$$\sigma_t^2 = \alpha_0 + \sum_{i=1}^q \alpha_i \varepsilon_{t-i}^2 + \sum_{j=1}^p \beta_j \sigma_{t-j}^2$$
+
+. . .
+
+**Uso**: Finanzas (modelado de riesgo), economía.
+
+---
+
+# Mejores Prácticas
+
+## Checklist del Modelador
+
+::: {.nonincremental}
+✅ **Antes de modelar**:
+
+- Entender el contexto del problema
+- Explorar visualmente los datos
+- Identificar valores atípicos y datos faltantes
+- Evaluar estacionariedad
+
+✅ **Durante el modelado**:
+
+- Probar múltiples especificaciones
+- Usar criterios de información (AIC/BIC)
+- Validar supuestos con rigor
+
+✅ **Después del modelado**:
+
+- Validación out-of-sample
+- Comparar con modelos benchmark
+- Documentar decisiones y supuestos
+:::
+
+---
+
+## Errores Comunes a Evitar
+
+1. **Sobrediferenciación**: Más diferencias de las necesarias (aumenta varianza de errores)
+
+2. **Sobreajuste**: Modelos muy complejos con parámetros no significativos
+
+3. **Ignorar diagnóstico**: Aceptar un modelo sin verificar residuos
+
+4. **Datos insuficientes**: Regla práctica: $n \geq 50$ para ARIMA simple
+
+5. **No validar out-of-sample**: Probar pronósticos en datos retenidos
+
+6. **Confundir correlación con causalidad**: ARIMA es descriptivo, no causal
+
+---
+
+## Validación Cruzada para Series de Tiempo
+
+**NO usar k-fold estándar** (rompe dependencia temporal)
+
+. . .
+
+**Usar**:
+
+- **Rolling window**: Ventana fija que se mueve
+- **Expanding window**: Ventana que crece
+- **Time series split**: Múltiples train/test temporales
+
+```python
+from sklearn.model_selection import TimeSeriesSplit
+
+tscv = TimeSeriesSplit(n_splits=5)
+for train_idx, test_idx in tscv.split(data):
+    train, test = data[train_idx], data[test_idx]
+    # Entrenar y evaluar
+```
+
+---
+
+## Comparación de Modelos
+
+**Métricas de error**:
+
+- **MAE** (Mean Absolute Error): $\frac{1}{n}\sum|y_i - \hat{y}_i|$
+- **RMSE** (Root Mean Squared Error): $\sqrt{\frac{1}{n}\sum(y_i - \hat{y}_i)^2}$
+- **MAPE** (Mean Absolute Percentage Error): $\frac{100}{n}\sum\frac{|y_i - \hat{y}_i|}{|y_i|}$
+
+. . .
+
+**Benchmarks**:
+
+- Modelo naive (último valor observado)
+- Media histórica
+- Suavizamiento exponencial simple
+
+---
+
+# Recursos Adicionales
+
+## Libros Recomendados
+
+1. **Box, G. E., Jenkins, G. M., Reinsel, G. C., & Ljung, G. M.** (2015). *Time Series Analysis: Forecasting and Control*. 5th ed. Wiley.
+   - La referencia clásica y definitiva
+
+2. **Hyndman, R. J., & Athanasopoulos, G.** (2021). *Forecasting: Principles and Practice*. 3rd ed. OTexts.
+   - Gratis online, muy didáctico: [otexts.com/fpp3/](https://otexts.com/fpp3/)
+
+3. **Shumway, R. H., & Stoffer, D. S.** (2017). *Time Series Analysis and Its Applications*. 4th ed. Springer.
+   - Enfoque más teórico y riguroso
+
+---
+
+## Recursos Online
+
+**Tutoriales**:
+
+- [Forecast package (R)](https://pkg.robjhyndman.com/forecast/)
+- [Statsmodels documentation (Python)](https://www.statsmodels.org/stable/tsa.html)
+- [Penn State STAT 510](https://online.stat.psu.edu/stat510/) - Curso completo gratis
+
+**Conjuntos de datos**:
+
+- R: `datasets`, `fma`, `fpp2`, `fpp3`
+- Python: `statsmodels.datasets`
+- [Kaggle Time Series datasets](https://www.kaggle.com/datasets?tags=13302-Time+Series)
+
+---
+
+## Software y Herramientas
+
+**R**:
+
+- `forecast` - Rob Hyndman (clásico)
+- `fable` - Tidyverts (moderno)
+- `TSstudio` - Visualización interactiva
+
+**Python**:
+
+- `statsmodels` - Análisis estadístico completo
+- `pmdarima` - Auto ARIMA
+- `sktime` - Machine learning para series temporales
+
+**Interfaces**:
+
+- Quarto/R Markdown - Reportes reproducibles
+- Shiny/Streamlit - Aplicaciones interactivas
+
+---
+
+# Resumen Final
+
+## Puntos Clave
+
+::: {.nonincremental}
+1. **ARIMA** = combinación de componentes AR, I (diferenciación), MA
+
+2. **Identificación**: ACF y PACF son herramientas clave
+   - AR: PACF corta, ACF decae
+   - MA: ACF corta, PACF decae
+
+3. **Metodología Box-Jenkins**: proceso iterativo (identificar → estimar → diagnosticar)
+
+4. **Estacionariedad**: Requisito fundamental para AR y MA
+
+5. **Diagnóstico de residuos**: Crítico para validar el modelo
+
+6. **Parsimonia**: Preferir modelos simples (Occam's razor)
+:::
+
+---
+
+## Próximos Pasos
+
+**Para profundizar**:
+
+- Modelos SARIMA (estacionalidad)
+- ARIMAX (variables exógenas)
+- Modelos de espacio de estados
+- GARCH (volatilidad)
+- Machine Learning para series de tiempo
+
+. . .
+
+**Práctica**:
+
+- Trabajar con datos reales
+- Comparar ARIMA con otros enfoques
+- Competencias de pronóstico (M-competitions)
+
+---
+
+## ¡Preguntas y Discusión!
+
+::: {.r-fit-text}
+**Gracias por su atención**
+:::
+
+**Contacto y recursos**:
+
+- Documentación del curso: [Link]
+- Código y ejemplos: [GitHub]
+- Consultas: [Email/Office Hours]
+
+. . .
+
+> "All models are wrong, but some are useful" - George Box
+
+---
+
+## Referencias
+
+::: {.references style="font-size: 0.7em;"}
+- Box, G. E., Jenkins, G. M., Reinsel, G. C., & Ljung, G. M. (2015). *Time Series Analysis: Forecasting and Control*. 5th ed. Wiley.
+
+- Hyndman, R. J., & Athanasopoulos, G. (2021). *Forecasting: Principles and Practice*. 3rd ed. OTexts. Available at: https://otexts.com/fpp3/
+
+- Shumway, R. H., & Stoffer, D. S. (2017). *Time Series Analysis and Its Applications: With R Examples*. 4th ed. Springer.
+
+- Hamilton, J. D. (1994). *Time Series Analysis*. Princeton University Press.
+
+- Brockwell, P. J., & Davis, R. A. (2016). *Introduction to Time Series and Forecasting*. 3rd ed. Springer.
+:::

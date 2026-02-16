@@ -1,0 +1,435 @@
+---
+title: "Procesos Estacionarios"
+subtitle: "AR, MA y ARMA: Teoría y Práctica"
+author: "Fernando Salcedo Mejía Eco, Ms"
+afi: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
+date: "Febrero 2026"
+format:
+  revealjs:
+    theme: [default, src/theme/style.scss]
+    slide-number: true
+    transition: fade
+    scrollable: true
+    code-fold: true
+    embed-resources: true
+    echo: true
+    logo: src/img/logo_utb.png
+    footer: "UTB-ETD | Programa de Ciencia de Datos"
+title-slide-attributes:
+    data-background-image: src/img/plantilla-inicio.png
+    data-background-opacity: "0.6"
+---
+
+## Contenido
+
+1. **Proceso Estocástico y Estacionariedad**
+2. **Modelos AR(p)** - Procesos Autoregresivos
+3. **Modelos MA(q)** - Medias Móviles
+4. **Modelos ARMA(p,q)** - Combinación
+
+---
+
+# Conceptos Fundamentales
+
+## Proceso Estocástico
+
+- Un **proceso estocástico** $\{Y_t\}$ es una colección de **variables aleatorias** indexadas en el tiempo.
+$$
+{y_1, y_2, \dots, y_T}
+$$
+
+- Considere por ejemplo una colección $T$ de valores $\varepsilon_t$ aleatorios e independientes identicamente distribuidas
+
+$$
+{varepsilon_1, varepsilon_3, \dots, varepsilon_T} \\
+\varepsilon_t \sim N(0, \sigma^2)
+$$
+
+
+:::: {.columns}
+::: {.column width="50%"}
+**Características**:
+
+- Media: $\mu_t = E[Y_t]$
+- Varianza: $\sigma^2_t = Var(Y_t)$
+- Autocovarianza: $\gamma(t,s) = Cov(Y_t, Y_s)$
+- Autocorrelación: $\rho(t,s) = \frac{\gamma(t,s)}{\sqrt{\sigma^2_t\sigma^2_s}}$
+:::
+
+::: {.column width="50%"}
+**Tipos**:
+
+- Determinísticos
+- Estocásticos
+- Estacionarios
+- No estacionarios
+:::
+::::
+
+---
+
+## Estacionariedad
+
+### Estacionariedad Débil (o de segundo orden)
+
+Un proceso $\{Y_t\}$ es **débilmente estacionario** si:
+
+1. $E[Y_t] = \mu$ (constante) $\forall t$
+2. $Var(Y_t) = \sigma^2$ (constante) $\forall t$
+3. $Cov(Y_t, Y_{t+k}) = \gamma_k$ (solo depende del rezago $k$)
+
+. . .
+
+### ¿Por qué es importante?
+
+::: {.incremental}
+- Los modelos ARMA requieren estacionariedad
+- Propiedades estadísticas constantes en el tiempo
+- Permite hacer inferencia y pronóstico
+:::
+
+---
+
+## Función de Autocorrelación (ACF)
+
+$$\rho_k = \frac{\gamma_k}{\gamma_0} = \frac{Cov(Y_t, Y_{t-k})}{Var(Y_t)}$$
+
+:::: {.columns}
+::: {.column width="50%"}
+**Propiedades**:
+
+- $\rho_0 = 1$
+- $-1 \leq \rho_k \leq 1$
+- $\rho_k = \rho_{-k}$ (simétrica)
+:::
+
+::: {.column width="50%"}
+**Utilidad**:
+
+- Identificar patrones temporales
+- Diagnosticar modelos
+- Determinar orden MA
+:::
+::::
+
+---
+
+## Función de Autocorrelación Parcial (PACF)
+
+La **PACF** mide la correlación entre $Y_t$ y $Y_{t-k}$ eliminando el efecto de los rezagos intermedios.
+
+$$\phi_{kk} = Corr(Y_t, Y_{t-k} | Y_{t-1}, ..., Y_{t-k+1})$$
+
+. . .
+
+**Clave para identificación**:
+
+- **ACF**: identifica orden q (MA)
+- **PACF**: identifica orden p (AR)
+
+---
+
+# Modelos AR(p)
+
+## Modelo Autoregresivo de Orden p
+
+### Definición
+
+$$Y_t = c + \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + ... + \phi_p Y_{t-p} + \varepsilon_t$$
+
+donde:
+
+- $\varepsilon_t \sim WN(0, \sigma^2)$ (ruido blanco)
+- $\phi_1, ..., \phi_p$ son los parámetros autoregresivos
+- $c$ es una constante
+
+. . .
+
+**Interpretación**: El valor actual depende linealmente de sus $p$ valores pasados más un shock aleatorio.
+
+---
+
+## Operador de Rezagos
+
+Definimos el **operador de rezago** $B$: $B Y_t = Y_{t-1}$
+
+. . .
+
+El modelo AR(p) se puede escribir como:
+
+$$\phi(B) Y_t = c + \varepsilon_t$$
+
+donde $\phi(B) = 1 - \phi_1 B - \phi_2 B^2 - ... - \phi_p B^p$
+
+. . .
+
+**Polinomio característico**: $\phi(z) = 1 - \phi_1 z - \phi_2 z^2 - ... - \phi_p z^p$
+
+---
+
+## Condición de Estacionariedad
+
+Un proceso AR(p) es **estacionario** si y solo si:
+
+> Todas las raíces del polinomio característico $\phi(z) = 0$ están **fuera** del círculo unitario.
+
+. . .
+
+Equivalentemente: $|\phi_i| < 1$ para todas las raíces.
+
+. . .
+
+**Ejemplo AR(1)**: $Y_t = \phi Y_{t-1} + \varepsilon_t$
+
+- Estacionario si $|\phi| < 1$
+- Si $\phi = 1$: camino aleatorio (no estacionario)
+
+---
+
+## AR(1): Caso Especial
+
+$$Y_t = \phi Y_{t-1} + \varepsilon_t, \quad |\phi| < 1$$
+
+:::: {.columns}
+::: {.column width="50%"}
+**Propiedades**:
+
+- Media: $E[Y_t] = 0$
+- Varianza: $Var(Y_t) = \frac{\sigma^2}{1-\phi^2}$
+- ACF: $\rho_k = \phi^k$ (decaimiento exponencial)
+- PACF: $\phi_{11} = \phi$, $\phi_{kk} = 0$ para $k > 1$
+:::
+
+::: {.column width="50%"}
+**Identificación**:
+
+- ACF: decae gradualmente
+- PACF: corte abrupto después del rezago 1
+:::
+::::
+
+---
+
+## AR(2): Ejemplo
+
+$$Y_t = \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + \varepsilon_t$$
+
+**Condiciones de estacionariedad**:
+
+1. $\phi_1 + \phi_2 < 1$
+2. $\phi_2 - \phi_1 < 1$
+3. $|\phi_2| < 1$
+
+. . .
+
+**Comportamiento de la ACF**:
+
+- Decaimiento exponencial o sinusoidal amortiguado
+- Depende de si las raíces son reales o complejas
+
+---
+
+## Identificación de AR(p)
+
+| Característica | AR(p) |
+|----------------|-------|
+| **ACF** | Decae gradualmente (exponencial o sinusoidal) |
+| **PACF** | Corte abrupto después del rezago p |
+| **Orden** | p = último rezago significativo en PACF |
+
+. . .
+
+**Regla práctica**: Si PACF tiene corte claro en rezago p y ACF decae → AR(p)
+
+---
+
+# Modelos MA(q)
+
+## Modelo de Medias Móviles de Orden q
+
+### Definición
+
+$$Y_t = \mu + \varepsilon_t + \theta_1 \varepsilon_{t-1} + \theta_2 \varepsilon_{t-2} + ... + \theta_q \varepsilon_{t-q}$$
+
+donde:
+
+- $\varepsilon_t \sim WN(0, \sigma^2)$
+- $\theta_1, ..., \theta_q$ son los parámetros de medias móviles
+- $\mu$ es la media del proceso
+
+. . .
+
+**Interpretación**: El valor actual es una combinación lineal de shocks aleatorios actuales y pasados.
+
+---
+
+## Operador de Rezagos para MA
+
+Usando el operador de rezago:
+
+$$Y_t = \mu + \theta(B) \varepsilon_t$$
+
+donde $\theta(B) = 1 + \theta_1 B + \theta_2 B^2 + ... + \theta_q B^q$
+
+. . .
+
+**Importante**: Los modelos MA son **siempre estacionarios** (son combinaciones lineales finitas de ruido blanco).
+
+---
+
+## Condición de Invertibilidad
+
+Un proceso MA(q) es **invertible** si y solo si:
+
+> Todas las raíces del polinomio $\theta(z) = 0$ están **fuera** del círculo unitario.
+
+. . .
+
+**¿Por qué importa?**
+
+- Invertibilidad permite expresar el MA como un AR infinito
+- Necesaria para estimación única de parámetros
+- Garantiza convergencia de algoritmos de estimación
+
+---
+
+## MA(1): Caso Especial
+
+$$Y_t = \varepsilon_t + \theta \varepsilon_{t-1}, \quad |\theta| < 1$$
+
+:::: {.columns}
+::: {.column width="50%"}
+**Propiedades**:
+
+- Media: $E[Y_t] = 0$
+- Varianza: $Var(Y_t) = \sigma^2(1+\theta^2)$
+- ACF: 
+  - $\rho_1 = \frac{\theta}{1+\theta^2}$
+  - $\rho_k = 0$ para $k > 1$
+- PACF: decaimiento exponencial
+:::
+
+::: {.column width="50%"}
+**Identificación**:
+
+- ACF: corte abrupto después del rezago 1
+- PACF: decae gradualmente
+:::
+::::
+
+---
+
+## MA(q): Propiedades Generales
+
+**Autocorrelación**:
+
+$$\rho_k = \begin{cases}
+\frac{\sum_{j=0}^{q-k} \theta_j \theta_{j+k}}{\sum_{j=0}^{q} \theta_j^2} & k = 1, 2, ..., q \\
+0 & k > q
+\end{cases}$$
+
+donde $\theta_0 = 1$.
+
+. . .
+
+**Característica clave**: ACF se anula después del rezago q (memoria finita).
+
+---
+
+## Identificación de MA(q)
+
+| Característica | MA(q) |
+|----------------|-------|
+| **ACF** | Corte abrupto después del rezago q |
+| **PACF** | Decae gradualmente (exponencial o sinusoidal) |
+| **Orden** | q = último rezago significativo en ACF |
+
+. . .
+
+**Regla práctica**: Si ACF tiene corte claro en rezago q y PACF decae → MA(q)
+
+---
+
+# Modelos ARMA(p,q)
+
+## Combinando AR y MA
+
+### Definición
+
+$$Y_t = c + \phi_1 Y_{t-1} + ... + \phi_p Y_{t-p} + \varepsilon_t + \theta_1 \varepsilon_{t-1} + ... + \theta_q \varepsilon_{t-q}$$
+
+. . .
+
+**Forma compacta**:
+
+$$\phi(B) Y_t = c + \theta(B) \varepsilon_t$$
+
+donde:
+
+- $\phi(B) = 1 - \phi_1 B - ... - \phi_p B^p$
+- $\theta(B) = 1 + \theta_1 B + ... + \theta_q B^q$
+
+---
+
+## Condiciones de ARMA(p,q)
+
+Para que un proceso ARMA(p,q) sea válido:
+
+. . .
+
+1. **Estacionariedad**: Raíces de $\phi(z) = 0$ fuera del círculo unitario
+
+2. **Invertibilidad**: Raíces de $\theta(z) = 0$ fuera del círculo unitario
+
+3. **Parsimonia**: No debe haber factores comunes entre $\phi(B)$ y $\theta(B)$
+
+---
+
+## Identificación de ARMA(p,q)
+
+| Modelo | ACF | PACF |
+|--------|-----|------|
+| AR(p) | Decae gradualmente | Corte en rezago p |
+| MA(q) | Corte en rezago q | Decae gradualmente |
+| ARMA(p,q) | Decae gradualmente | Decae gradualmente |
+
+. . .
+
+**Desafío**: Cuando ambas decaen, determinar p y q es más complejo.
+
+**Soluciones**:
+
+- Criterios de información (AIC, BIC)
+- Análisis de residuos
+- Prueba y error informado
+
+---
+
+## Criterios de Información
+
+**AIC (Akaike Information Criterion)**:
+
+$$AIC = -2\log(L) + 2k$$
+
+**BIC (Bayesian Information Criterion)**:
+
+$$BIC = -2\log(L) + k\log(n)$$
+
+donde:
+
+- $L$ = verosimilitud del modelo
+- $k$ = número de parámetros
+- $n$ = tamaño de la muestra
+
+. . .
+
+**Regla**: Seleccionar el modelo con menor AIC/BIC (equilibrio ajuste-parsimonia).
+
+---
+
+## Referencias
+
+::: {.references style="font-size: 0.7em;"}
+- Hyndman, R. J., & Athanasopoulos, G. (2021). *Forecasting: Principles and Practice*. 3rd ed. OTexts. Available at: https://otexts.com/fpp3/
+- Hamilton, J. D. (1994). *Time Series Analysis*. Princeton University Press.
+:::
