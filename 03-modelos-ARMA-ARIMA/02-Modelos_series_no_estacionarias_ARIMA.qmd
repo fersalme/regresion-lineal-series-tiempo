@@ -160,7 +160,7 @@ $$
 
 ## Ejercicio 1. Pronostico del PIB de Colombia.
 
-- Usando los datos del Banco Mundial, realice el pronostico del PIB de Colombia para el próximo año.
+- Usando los datos del Banco Mundial, estime un modelo ARIMA válido acorde a la teoría entre 1960-2024. Finalmente, realice el pronostico del PIB de Colombia para los próximos 5 años.
 
 ## Referencias
 
