@@ -285,121 +285,88 @@ plt.show()
 - Interpret el resultado del test ADF: ¿Es la serie estacionaria?
 - Corregir si no es estacionaria con la diferenciación.
 
+## Concepto de proceso ruido blanco
 
-# Modelos AR(p)
-
-## Modelo Autoregresivo de Orden p
-
-### Definición
-
-$$Y_t = c + \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + ... + \phi_p Y_{t-p} + \varepsilon_t$$
-
-donde:
-
-- $\varepsilon_t \sim WN(0, \sigma^2)$ (ruido blanco)
-- $\phi_1, ..., \phi_p$ son los parámetros autoregresivos
-- $c$ es una constante
-
-
-**Interpretación**: El valor actual depende linealmente de sus $p$ valores pasados más un shock aleatorio.
-
----
-
-## Operador de Rezagos
-
-Definimos el **operador de rezago** $B$: $B Y_t = Y_{t-1}$
-
-. . .
-
-El modelo AR(p) se puede escribir como:
-
-$$\phi(B) Y_t = c + \varepsilon_t$$
-
-donde $\phi(B) = 1 - \phi_1 B - \phi_2 B^2 - ... - \phi_p B^p$
-
-**Polinomio característico**: $\phi(z) = 1 - \phi_1 z - \phi_2 z^2 - ... - \phi_p z^p$
-
----
-
-## Condición de Estacionariedad
-
-Un proceso AR(p) es **estacionario** si y solo si:
-
-> Todas las raíces del polinomio característico $\phi(z) = 0$ están **fuera** del círculo unitario.
-
-. . .
-
-Equivalentemente: $|\phi_i| < 1$ para todas las raíces.
-
-. . .
-
-**Ejemplo AR(1)**: $Y_t = \phi Y_{t-1} + \varepsilon_t$
-
-- Estacionario si $|\phi| < 1$
-- Si $\phi = 1$: camino aleatorio (no estacionario)
-
----
-
-## AR(1): Caso Especial
-
-$$Y_t = \phi Y_{t-1} + \varepsilon_t, \quad |\phi| < 1$$
-
-:::: {.columns}
-::: {.column width="50%"}
-**Propiedades**:
-
-- Media: $E[Y_t] = 0$
-- Varianza: $Var(Y_t) = \frac{\sigma^2}{1-\phi^2}$
-- ACF: $\rho_k = \phi^k$ (decaimiento exponencial)
-- PACF: $\phi_{11} = \phi$, $\phi_{kk} = 0$ para $k > 1$
+::: {.callout-note}
+El ruido blanco (White Noise) representa la parte de los datos que es puramente aleatoria e impredecible. Es el "residuo ideal" que buscamos obtener después de ajustar un modelo, ya que significa que el modelo ha extraído toda la información útil de la serie de tiempo.
 :::
 
-::: {.column width="50%"}
-**Identificación**:
+### Definición matemática
 
-- ACF: decae gradualmente
-- PACF: corte abrupto después del rezago 1
-:::
-::::
+Se dice que $\{\varepsilon_t\}$ es un proceso de **ruido blanco** si cumple:
 
----
+- **Media nula:** $E[\varepsilon_t] = 0$
+- **Varianza constante:** $Var(\varepsilon_t) = \sigma^2$
+- **Ausencia de autocorrelación:** $\text{Corr}(\varepsilon_t, \varepsilon_{t-k}) = 0$ para todo $k \neq 0$
 
-## AR(2): Ejemplo
+Si además los errores siguen una distribución normal, hablamos de **Ruido Blanco Gaussiano**:
+$$
+\varepsilon_t \sim \text{IID} N(0, \sigma^2)
+$$
 
-$$Y_t = \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + \varepsilon_t$$
+```{python}
+#| fig-cap: "Serie de Ruido Blanco y su ACF (Python)"
+import numpy as np
+import pandas as pd 
+import matplotlib.pyplot as plt
+from statsmodels.graphics.tsaplots import plot_acf
+from statsmodels.stats.diagnostic import acorr_ljungbox
 
-**Condiciones de estacionariedad**:
+# Generar 200 observaciones de ruido blanco gaussiano
+np.random.seed(42)
+white_noise = np.random.normal(0, 1, 200)
 
-1. $\phi_1 + \phi_2 < 1$
-2. $\phi_2 - \phi_1 < 1$
-3. $|\phi_2| < 1$
+# Graficar la serie y el ACF
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-. . .
+# Gráfico de la serie temporal
+axes[0].plot(white_noise, color='steelblue')
+axes[0].set_title('Proceso de Ruido Blanco')
+axes[0].axhline(0, color='red', linestyle='--', linewidth=1)
 
-**Comportamiento de la ACF**:
+# Gráfico de Autocorrelación (ACF)
+plot_acf(white_noise, ax=axes[1], lags=40)
+axes[1].set_title('Autocorrelación (ACF)')
 
-- Decaimiento exponencial o sinusoidal amortiguado
-- Depende de si las raíces son reales o complejas
+plt.tight_layout()
+plt.show()
 
----
+# Realizar la prueba para los primeros 10 rezagos
+res = acorr_ljungbox(white_noise, lags=[10], return_df=True)
+print(res)
 
-## Identificación de AR(p)
-
-| Característica | AR(p) |
-|----------------|-------|
-| **ACF** | Decae gradualmente (exponencial o sinusoidal) |
-| **PACF** | Corte abrupto después del rezago p |
-| **Orden** | p = último rezago significativo en PACF |
-
-. . .
-
-**Regla práctica**: Si PACF tiene corte claro en rezago p y ACF decae → AR(p)
-
----
+# Estadisticos
+print("-" * 30)
+print(f"Media : {np.mean(white_noise)}")
+print(f"Varianza : {np.var(white_noise)}")
+```
 
 # Modelos MA(q)
 
-## Modelo de Medias Móviles de Orden q
+## MA de Primer Orden
+
+- Sea $\varepsilon_t$ un proceso ruido blanco, definimos a MA(1) así:
+$$
+Y_t = \mu + \varepsilon_t + \theta \varepsilon_{t-1}
+$$
+
+- Donde $\mu$ y $\theta$ son constantes.
+- $Y_t$  es construido de una suma ponderada se los 2 mas recientes valores de $\varepsilon_t$
+- Este proceso es estacionario en covarianza
+
+**Propiedades**:
+
+- Media: $E[Y_t] = 0$
+- Varianza: $Var(Y_t) = \sigma^2(1+\theta^2)$
+- Autocovarianza:
+    - $E(Y_t - \mu)(Y_{t-1} - \mu) = \theta \sigma^2$
+    - $E(Y_t - \mu)(Y_{t-j} - \mu) = 0$ para $j > 1$
+- ACF: 
+  - $\rho_1 = \frac{\theta}{1+\theta^2}$
+  - $\rho_k = 0$ para $k > 1$
+- PACF: decaimiento exponencial
+
+## Proceso de Medias Móviles de orden q MA(q) 
 
 ### Definición
 
@@ -411,84 +378,24 @@ donde:
 - $\theta_1, ..., \theta_q$ son los parámetros de medias móviles
 - $\mu$ es la media del proceso
 
-. . .
-
+::: {.callout-note}
 **Interpretación**: El valor actual es una combinación lineal de shocks aleatorios actuales y pasados.
-
----
-
-## Operador de Rezagos para MA
-
-Usando el operador de rezago:
-
-$$Y_t = \mu + \theta(B) \varepsilon_t$$
-
-donde $\theta(B) = 1 + \theta_1 B + \theta_2 B^2 + ... + \theta_q B^q$
-
-. . .
-
-**Importante**: Los modelos MA son **siempre estacionarios** (son combinaciones lineales finitas de ruido blanco).
-
----
-
-## Condición de Invertibilidad
-
-Un proceso MA(q) es **invertible** si y solo si:
-
-> Todas las raíces del polinomio $\theta(z) = 0$ están **fuera** del círculo unitario.
-
-. . .
-
-**¿Por qué importa?**
-
-- Invertibilidad permite expresar el MA como un AR infinito
-- Necesaria para estimación única de parámetros
-- Garantiza convergencia de algoritmos de estimación
-
----
-
-## MA(1): Caso Especial
-
-$$Y_t = \varepsilon_t + \theta \varepsilon_{t-1}, \quad |\theta| < 1$$
-
-:::: {.columns}
-::: {.column width="50%"}
-**Propiedades**:
-
-- Media: $E[Y_t] = 0$
-- Varianza: $Var(Y_t) = \sigma^2(1+\theta^2)$
-- ACF: 
-  - $\rho_1 = \frac{\theta}{1+\theta^2}$
-  - $\rho_k = 0$ para $k > 1$
-- PACF: decaimiento exponencial
-:::
-
-::: {.column width="50%"}
-**Identificación**:
-
-- ACF: corte abrupto después del rezago 1
-- PACF: decae gradualmente
-:::
-::::
-
----
+::: 
 
 ## MA(q): Propiedades Generales
 
 **Autocorrelación**:
 
-$$\rho_k = \begin{cases}
+$$
+\rho_k = \begin{cases}
 \frac{\sum_{j=0}^{q-k} \theta_j \theta_{j+k}}{\sum_{j=0}^{q} \theta_j^2} & k = 1, 2, ..., q \\
 0 & k > q
-\end{cases}$$
+\end{cases}
+$$
 
 donde $\theta_0 = 1$.
 
-. . .
-
-**Característica clave**: ACF se anula después del rezago q (memoria finita).
-
----
+**Característica**: ACF se anula después del rezago q (memoria finita).
 
 ## Identificación de MA(q)
 
@@ -498,46 +405,220 @@ donde $\theta_0 = 1$.
 | **PACF** | Decae gradualmente (exponencial o sinusoidal) |
 | **Orden** | q = último rezago significativo en ACF |
 
-. . .
+> **Regla práctica**: Si ACF tiene corte claro en rezago q y PACF decae → MA(q)
 
-**Regla práctica**: Si ACF tiene corte claro en rezago q y PACF decae → MA(q)
 
----
+## Simulación
+
+- Simulamos los procesos :
+$$
+MA(1): y_t = \epsilon_t + 0.7 * \epsilon_{t-1} \\
+MA(2): y_t = \epsilon_t + 0.6 * \epsilon_{t-1} + 0.3 * \epsilon_{t-2}
+$$
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from statsmodels.tsa.arima_process import ArmaProcess
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+
+def plot_proceso_ma(process, title):
+    # Generar 500 muestras del proceso
+    np.random.seed(42)
+    data = process.generate_sample(nsample=500)
+    
+    fig, axes = plt.subplots(1, 3, figsize=(20, 4))
+    
+    # Gráfico Temporal
+    axes[0].plot(data, color='teal', alpha=0.8)
+    axes[0].set_title(f'Serie Temporal {title}')
+    axes[0].axhline(0, color='red', linestyle='--', linewidth=1)
+    
+    # ACF
+    plot_acf(data, ax=axes[1], lags=20, title=f'ACF {title}')
+    
+    # PACF
+    plot_pacf(data, ax=axes[2], lags=20, title=f'PACF {title}', method='ywm')
+    
+    plt.tight_layout()
+    plt.show()
+
+# Nota: statsmodels usa el formato (1, theta_1, theta_2, ...) 
+# para el polinomio de medias móviles.
+
+# MA(1): y_t = epsilon_t + 0.7 * epsilon_{t-1}
+ma1_params = np.array([1, 0.7])
+ar1_params = np.array([1]) # Sin parte AR
+process_ma1 = ArmaProcess(ar1_params, ma1_params)
+
+# MA(2): y_t = epsilon_t + 0.6 * epsilon_{t-1} + 0.3 * epsilon_{t-2}
+ma2_params = np.array([1, 0.6, 0.3])
+process_ma2 = ArmaProcess(ar1_params, ma2_params)
+
+# Ejecutar visualizaciones
+plot_proceso_ma(process_ma1, "MA(1) con $\\theta=0.7$")
+plot_proceso_ma(process_ma2, "MA(2) con $\\theta=[0.6, 0.3]$")
+
+```
+
+# Modelos AR(p)
+
+## Modelo Autoregresivo de Orden 1 AR(1)
+
+$$Y_t = \phi Y_{t-1} + \varepsilon_t, \quad |\phi| < 1$$
+
+**Propiedades**:
+
+- Media: $E[Y_t] = 0$
+- Varianza: $Var(Y_t) = \frac{\sigma^2}{1-\phi^2}$
+- ACF: $\rho_k = \phi^k$ (decaimiento exponencial)
+- PACF: $\phi_{1,1} = \phi$, $\phi_{kk} = 0$ para $k > 1$
+
+**Identificación**:
+- ACF: decae gradualmente
+- PACF: corte abrupto después del rezago 1
+
+**Condiciones de estacionariedad**:
+- Si $|\phi| < 1$ : existe un procesos estacionario para $Y_t$
+- Si $|\phi| \geq 1$ : NO existe un procesos estacionario para $Y_t$ con varianzas finitas. 
+- Si $\phi = 1$: camino aleatorio (no estacionario)
+
+## AR(2)
+
+$$
+Y_t = \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + \varepsilon_t
+$$
+
+**Condiciones de estacionariedad**:
+1. $\phi_1 + \phi_2 < 1$
+2. $\phi_2 - \phi_1 < 1$
+3. $|\phi_2| < 1$
+
+**Comportamiento de la ACF**:
+- Decaimiento exponencial o sinusoidal amortiguado
+- Depende de si las raíces son reales o complejas
+
+## Simulación AR(1) y AR(2)
+
+$$
+AR(1): y_t = 0.7 * y_{t-1} + \epsilon_t \\
+AR(2): y_t = 0.5 * y_{t-1} + 0.25 * y_{t-2} + \epsilon_t
+$$
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from statsmodels.tsa.arima_process import ArmaProcess
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+
+def plot_proceso_ar(process, title):
+    # Generar 500 muestras
+    np.random.seed(42)
+    data = process.generate_sample(nsample=500)
+    
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+    
+    # Gráfico Temporal
+    axes[0].plot(data, color='darkslateblue', alpha=0.8)
+    axes[0].set_title(f'Serie Temporal {title}')
+    axes[0].axhline(0, color='red', linestyle='--', linewidth=1)
+    
+    # ACF
+    plot_acf(data, ax=axes[1], lags=20, title=f'ACF {title}')
+    
+    # PACF
+    plot_pacf(data, ax=axes[2], lags=20, title=f'PACF {title}', method='ywm')
+    
+    plt.tight_layout()
+    plt.show()
+
+# Nota: statsmodels usa el formato (1, theta_1, theta_2, ...) 
+# para el polinomio de medias móviles.
+
+# AR(1): y_t = 0.7 * y_{t-1} + epsilon_t
+ar1_params = np.array([1, -0.7])
+ma_params = np.array([1]) # Sin parte MA
+process_ar1 = ArmaProcess(ar1_params, ma_params)
+
+# AR(2): y_t = 0.5 * y_{t-1} + 0.25 * y_{t-2} + epsilon_t
+ar2_params = np.array([1, -0.5, -0.25])
+process_ar2 = ArmaProcess(ar2_params, ma_params)
+
+# Ejecutar visualizaciones
+plot_proceso_ar(process_ar1, "AR(1) con $\phi=0.7$")
+plot_proceso_ar(process_ar2, "AR(2) con $\phi=[0.5, 0.25]$")
+```
+
+## Operador de Rezagos
+
+- Definimos el **operador de rezago** $L$: $L Y_t = Y_{t-1}$ , $L^2 Y_t = Y_{t-2}$, $L^k Y_t = Y_{t-k}$
+- El modelo AR(2) se puede escribir como:
+$$
+Y_t = \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + \varepsilon_t \\
+Y_t = \phi_1 L + \phi_2 L^2 + \varepsilon_t \\
+(1 - \phi_1 L - \phi_2 L ^2) Y_t = c + \varepsilon_t
+$$
+
+**Polinomio característico**: $1 - \phi_1 z - \phi_2 z^2 = 0$
+**Solución polinomio** : $1 - \phi_1 z - \phi_2 z^2 = (1 - \lambda_1  L)(1 - \lambda_2  L)$
+
+## Condición de Estacionariedad polinomio característico
+
+Un proceso AR(p) es **estacionario** si y solo si:
+
+> Todas las raíces del polinomio característico $\phi(z) = 0$ están **fuera** del círculo unitario.
+
+Equivalentemente: $|\phi_i| < 1$ para todas las raíces.
+
+**Ejemplo AR(1)**: $Y_t = \phi Y_{t-1} + \varepsilon_t$
+
+- Estacionario si $|\phi| < 1$
+- Si $\phi = 1$: raíz unitaria. En este caso, la ecuación se convierte en una caminata aleatoria (no estacionario)
+
+## Modelo Autoregresivo de Orden p
+
+### Definición
+
+$$
+Y_t = c + \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + ... + \phi_p Y_{t-p} + \varepsilon_t
+$$
+
+donde:
+
+- $\varepsilon_t \sim WN(0, \sigma^2)$ (ruido blanco)
+- $\phi_1, ..., \phi_p$ son los parámetros autoregresivos
+- $c$ es una constante
+
+> **Interpretación**: El valor actual de $Y_t$ depende linealmente de sus $p$ valores pasados más un shock aleatorio.
+
+## Identificación de AR(p)
+
+| Característica | AR(p) |
+|----------------|-------|
+| **ACF** | Decae gradualmente (exponencial o sinusoidal) |
+| **PACF** | Corte abrupto después del rezago p |
+| **Orden** | p = último rezago significativo en PACF |
+
+
+> **Regla práctica**: Si PACF tiene corte claro en rezago p y ACF decae → AR(p)
 
 # Modelos ARMA(p,q)
 
 ## Combinando AR y MA
 
-### Definición
+**Definición**
 
 $$Y_t = c + \phi_1 Y_{t-1} + ... + \phi_p Y_{t-p} + \varepsilon_t + \theta_1 \varepsilon_{t-1} + ... + \theta_q \varepsilon_{t-q}$$
 
-. . .
-
-**Forma compacta**:
-
-$$\phi(B) Y_t = c + \theta(B) \varepsilon_t$$
-
-donde:
-
-- $\phi(B) = 1 - \phi_1 B - ... - \phi_p B^p$
-- $\theta(B) = 1 + \theta_1 B + ... + \theta_q B^q$
-
----
-
-## Condiciones de ARMA(p,q)
+**Condiciones de ARMA(p,q)**
 
 Para que un proceso ARMA(p,q) sea válido:
 
-. . .
-
 1. **Estacionariedad**: Raíces de $\phi(z) = 0$ fuera del círculo unitario
-
 2. **Invertibilidad**: Raíces de $\theta(z) = 0$ fuera del círculo unitario
-
-3. **Parsimonia**: No debe haber factores comunes entre $\phi(B)$ y $\theta(B)$
-
----
+3. **Parsimonia**: Priorizar un modelo sencillo, utilizando la menor cantidad de parámetros necesaria para explicar adecuadamente los datos.
 
 ## Identificación de ARMA(p,q)
 
@@ -547,12 +628,9 @@ Para que un proceso ARMA(p,q) sea válido:
 | MA(q) | Corte en rezago q | Decae gradualmente |
 | ARMA(p,q) | Decae gradualmente | Decae gradualmente |
 
-. . .
-
-**Desafío**: Cuando ambas decaen, determinar p y q es más complejo.
+**Problemas**: Cuando ambas decaen, determinar p y q es más complejo.
 
 **Soluciones**:
-
 - Criterios de información (AIC, BIC)
 - Análisis de residuos
 - Prueba y error informado
@@ -577,9 +655,57 @@ donde:
 
 . . .
 
-**Regla**: Seleccionar el modelo con menor AIC/BIC (equilibrio ajuste-parsimonia).
+> **Regla**: Seleccionar el modelo con menor AIC/BIC (equilibrio ajuste-parsimonia).
 
----
+## Simulación ARMA(p, q)
+
+$$
+ARMA(1, 1): y_t = 0.5*y_{t-1} + \epsilon_t + 0.7*\epsilon_{t-1} \\
+ARMA(1, 2): y_t = 0.7*y_{t-1} + \epsilon_t + 0.4*\epsilon_{t-1} + 0.2*\epsilon_{t-2}
+$$
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from statsmodels.tsa.arima_process import ArmaProcess
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+
+def plot_proceso_arma(process, title):
+    # Generar 500 muestras del proceso
+    np.random.seed(42)
+    data = process.generate_sample(nsample=500)
+    
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+    
+    # Gráfico Temporal
+    axes[0].plot(data, color='darkorange', alpha=0.8)
+    axes[0].set_title(f'Serie Temporal {title}')
+    axes[0].axhline(0, color='black', linestyle='--', linewidth=1)
+    
+    # ACF
+    plot_acf(data, ax=axes[1], lags=25, title=f'ACF {title}')
+    
+    # PACF
+    plot_pacf(data, ax=axes[2], lags=25, title=f'PACF {title}', method='ywm')
+    
+    plt.tight_layout()
+    plt.show()
+
+# ARMA(1, 1): y_t = 0.5*y_{t-1} + epsilon_t + 0.7*epsilon_{t-1}
+ar11 = np.array([1, -0.5])  # AR: (1 - 0.5L)
+ma11 = np.array([1, 0.7])   # MA: (1 + 0.7L)
+process_arma11 = ArmaProcess(ar11, ma11)
+
+# ARMA(1, 2): y_t = 0.7*y_{t-1} + epsilon_t + 0.4*epsilon_{t-1} + 0.2*epsilon_{t-2}
+ar12 = np.array([1, -0.7])  # AR: (1 - 0.7L)
+ma12 = np.array([1, 0.4, 0.2]) # MA: (1 + 0.4L + 0.2L^2)
+process_arma12 = ArmaProcess(ar12, ma12)
+
+# Ejecutar visualizaciones
+plot_proceso_arma(process_arma11, "ARMA(1, 1)")
+plot_proceso_arma(process_arma12, "ARMA(1, 2)")
+```
 
 ## Referencias
 
