@@ -21,6 +21,8 @@ timetk
 prophet
 zoo
 xts
+tseries
+moments
 
 # paquetes de machine learning y deep learning
 randomForest

@@ -12,6 +12,7 @@ IPython
 
 # series de tiempo
 statsmodels
+pmdarima
 statsforecast
 mlforecast
 utilsforecast
