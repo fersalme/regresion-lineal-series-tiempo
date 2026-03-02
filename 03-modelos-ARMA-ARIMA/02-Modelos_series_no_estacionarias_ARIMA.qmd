@@ -63,12 +63,12 @@ $$
 | Modelo | Nombre | Ecuación |
 |--------|--------|----------|
 | ARIMA(0,0,0) sin constante | Ruido blanco | $Y_t = \varepsilon_t$ |
-| ARIMA(1,0,0) sin constante | Camino aleatorio | $Y_t = Y_{t-1} + \varepsilon_t$ |
-| ARIMA(1,0,0) con constante | Camino aleatorio con deriva | $Y_t = c + Y_{t-1} + \varepsilon_t$ |
+| ARIMA(0,1,0) sin constante | Camino aleatorio | $Y_t = Y_{t-1} + \varepsilon_t$ |
+| ARIMA(0,1,0) con constante | Camino aleatorio con deriva | $Y_t = c + Y_{t-1} + \varepsilon_t$ |
 | ARIMA(0,0,1) | Media movil | $Y_t = \varepsilon_t + \theta\varepsilon_{t-1}$ |
 | ARIMA(1,0,0) | Autoregresivo | $Y_t =\phi \Delta Y_{t-1} + \varepsilon_{t-1}, |\phi| \le 1$ |
 | ARIMA(0,1,1) | Suavizado exponencial simple | $\Delta Y_t = \varepsilon_t + \theta\varepsilon_{t-1}$ |
-| ARIMA(1,1,0) | Crecimiento autorregresivo | $\Delta Y_t = \phi \Delta Y_{t-1} + \varepsilon_t, |\phi| \geq 1$ |
+| ARIMA(1,1,0) | Autorregresivo integrado | $\Delta Y_t = \phi \Delta Y_{t-1} + \varepsilon_t, |\phi| \geq 1$ |
 
 ## Algoritmo de estimación modelo ARIMA(p, d, q)
 

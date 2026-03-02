@@ -1132,12 +1132,12 @@ y&#39;_{t} = c + \phi_{1}y&#39;_{t-1} + \cdots + \phi_{p}y&#39;_{t-p}
 <td><span class="math inline">\(Y_t = \varepsilon_t\)</span></td>
 </tr>
 <tr class="even">
-<td>ARIMA(1,0,0) sin constante</td>
+<td>ARIMA(0,1,0) sin constante</td>
 <td>Camino aleatorio</td>
 <td><span class="math inline">\(Y_t = Y_{t-1} + \varepsilon_t\)</span></td>
 </tr>
 <tr class="odd">
-<td>ARIMA(1,0,0) con constante</td>
+<td>ARIMA(0,1,0) con constante</td>
 <td>Camino aleatorio con deriva</td>
 <td><span class="math inline">\(Y_t = c + Y_{t-1} + \varepsilon_t\)</span></td>
 </tr>
@@ -1158,7 +1158,7 @@ y&#39;_{t} = c + \phi_{1}y&#39;_{t-1} + \cdots + \phi_{p}y&#39;_{t-p}
 </tr>
 <tr class="odd">
 <td>ARIMA(1,1,0)</td>
-<td>Crecimiento autorregresivo</td>
+<td>Autorregresivo integrado</td>
 <td><span class="math inline">\(\Delta Y_t = \phi \Delta Y_{t-1} + \varepsilon_t, |\phi| \geq 1\)</span></td>
 </tr>
 </tbody>
