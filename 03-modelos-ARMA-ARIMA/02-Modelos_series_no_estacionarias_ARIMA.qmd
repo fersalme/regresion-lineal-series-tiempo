@@ -159,6 +159,125 @@ $$
 
 - Usando los datos del Banco Mundial, estime un modelo ARIMA válido acorde a la teoría entre 1960-2024. Finalmente, realice el pronostico del PIB de Colombia para los próximos 5 años.
 
+## Pronóstico
+
+Los pronósticos puntuales se pueden calcular siguiendo estos tres pasos:
+
+- Expande la ecuación ARIMA de modo que $y_t$​ quede en el lado izquierdo y todos los demás términos en el derecho.
+- Reescribe la ecuación sustituyendo $t$ por $T+h$.
+- En el lado derecho de la ecuación, sustituye las observaciones futuras por sus pronósticos, los errores futuros por cero y los errores pasados por sus residuos correspondientes.
+
+- Para un **ARIMA(1, 1, 1)** vemos que la ecuación de pronóstico que queda así:
+$$
+(1 - \phi L)(1 - L)y_t = (1 + \theta L)\varepsilon_t
+$$
+
+- **Paso 1: Expandir la ecuación**
+$$
+(1 - L - \phi L + \phi L^2)y_t = \varepsilon_t + \theta \varepsilon_{t - 1} \\
+y_t - y_{t-1} - \phi y_{t-1} + \phi  y_{t-2} = \varepsilon_t + \theta \varepsilon_{t - 1} \\
+\text{Despejando para } y_t \\
+y_t =  (1 + \phi)y_{t-1} - \phi  y_{t-2} + \varepsilon_t + \theta \varepsilon_{t - 1}
+$$
+
+- **Paso 2: Sustituir $t$ por $T+1$ para el primer pronóstico**
+$$
+y_{T+1} =  (1 + \phi) y_{T + 1 - 1 } - \phi  y_{T + 1 - 2} + \varepsilon_{T + 1 + 1} + \theta \varepsilon_{T + 1 - 1} \\
+y_{T+1} =  (1 + \phi ) y_{T} - \phi  y_{T - 1} + \varepsilon_{T + 2} + \theta \varepsilon_{T}
+$$
+
+- **Paso 3: Aplicar supuestos los errores $\varepsilon_{T + h} = 0$**
+
+El pronóstico final para un paso adelante sería:
+$$
+\hat{y}_{T+1|T} =  (1 + \phi ) y_{T} - \phi  y_{T - 1} + \theta \varepsilon_{T}
+$$
+
+- El término $(1 + \phi) y_{T} - \phi  y_{T-1}$ captura la inercia del crecimiento (la parte integrada y autorregresiva)
+- El término $\theta \varepsilon_T$ es el ajuste de error del modelo
+
+- **Intervalo de confianza pronóstico**
+$$
+\hat{y}_{T+1|T} \pm 1.96\hat{\sigma}
+$$
+
+Donde $\hat{\sigma}$ es la desviación estándar de los errores del modelo 
+
+## Ejemplo Pronóstico
+
+- Consideremos un ARIMA(1, 1, 1) con $\phi = 0.4$ y $\theta = -0.3$
+- El valor de la serie en $T$ es 100, y $T-1$ es 98
+- El error de estimación $\varepsilon_T = 2$
+- El pronóstico será :
+$$
+y_{T+1} =  (1 + \phi) y_{T} - \phi  y_{T-1} + \theta \varepsilon_T \\
+y_{T+1} =  (1 + 0.4) \times 100 - 0.4  \times 98 - 0.3 \times 2 \\
+y_{T+1} =  100.2
+$$
+
+- **Pregunta :** ¿cómo cambia este cálculo si intentamos pronosticar dos pasos adelante (T+2)?
+
+## Solución pronóstico T+2
+
+- Reemplazamos $T+2$ por $t$ en la ecuación de pronostico de ARIMA(1, 1, 1)  así:
+$$
+y_t =  (1 + \phi)y_{t-1} - \phi  y_{t-2} + \varepsilon_t + \theta \varepsilon_{t - 1} \\
+y_{T+2} =  (1 + \phi) y_{T + 2 - 1 } - \phi  y_{T + 2 - 2} + \varepsilon_{T + 2 + 1} + \theta \varepsilon_{T + 2 - 1} \\
+y_{T+2} =  (1 + \phi ) y_{T + 1} - \phi  y_{T} + \varepsilon_{T + 3} + \theta \varepsilon_{T + 1}
+$$
+
+- Conocemos a $y_{T}$ y sabemos que $\varepsilon_{T + h} = 0$. Finalmente, el término $y_{T + 1} = \hat{y}_{T+1|T}$ por tanto la ecuación de pronóstico es :
+$$
+\hat{y}_{T+2|T} = (1 + \phi ) \hat{y}_{T+1|T} - \phi  y_{T} \\
+\hat{y}_{T+2|T} = (1 + 0.4) \times 100.2 - 0.4 \times 100 \\
+\hat{y}_{T+2|T} = 100.28
+$$
+
+## Verificación del pronóstico con python
+
+- Para un **ARIMA(1, 1, 1)** vemos que la ecuación de pronóstico que queda así:
+$$
+ARIMA(1, 1, 1) : y_t =  (1 + \phi)y_{t-1} - \phi  y_{t-2} + \varepsilon_t + \theta \varepsilon_{t - 1} \\
+\phi = 0.4, \theta = -0.3
+$$
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from statsmodels.tsa.arima_process import ArmaProcess
+from statsmodels.tsa.arima.model import ARIMA
+
+ar11 = np.array([1, -0.4])  # AR: (1 - 0.4L)
+ma11 = np.array([1, 0.3])   # MA: (1 - 0.3L)
+arma_process = ArmaProcess(ar11, ma11)
+np.random.seed(42)
+datos_estacionarios = arma_process.generate_sample(nsample=100)
+y = np.cumsum(datos_estacionarios)
+
+# Modelo ARIMA estimado (incluye los errores)
+modelo_arima = ARIMA(y, order = (1, 1, 1)).fit()
+print(modelo_arima.summary())
+
+print("=" * 30 + "Pronóstico" + "=" * 30)
+forecast = modelo_arima.get_forecast(steps=1)
+print(f"Pronóstico T+1 con statsmodels ARIMA : {forecast.predicted_mean[0]}")
+
+resid = modelo_arima.resid
+forecast_formula = (1 + 0.4 ) * y[-1] - 0.4 * y[-2] - 0.3 * resid[-1]
+print(f"Pronóstico T+1 con ecuación de pronóstico : {forecast_formula}")
+
+```
+
+## Comparación de Modelos
+
+**Métricas de error**:
+
+- **MAE** (Mean Absolute Error): $\frac{1}{n}\sum|y_i - \hat{y}_i|$
+- **RMSE** (Root Mean Squared Error): $\sqrt{\frac{1}{n}\sum(y_i - \hat{y}_i)^2}$
+- **MAPE** (Mean Absolute Percentage Error): $\frac{100}{n}\sum\frac{|y_i - \hat{y}_i|}{|y_i|}$
+
+
 ## Referencias
 
 ::: {.references style="font-size: 0.7em;"}

@@ -1,0 +1,145 @@
+---
+title: "Modelos SARIMA y ARIMAX"
+subtitle: "Extensión del modelo ARIMA"
+author: "Curso de Series de Tiempo"
+format:
+  revealjs:
+    theme: [default, src/theme/style.scss]
+    slide-number: true
+    transition: fade
+    scrollable: true
+    code-fold: true
+    embed-resources: true
+    echo: true
+    logo: src/img/logo_utb.png
+    footer: "UTB-ETD | Programa de Ciencia de Datos"
+title-slide-attributes:
+    data-background-image: src/img/plantilla-inicio.png
+    data-background-opacity: "0.6"
+---
+
+## ARIMA Estacional: SARIMA
+
+Un modelo ARIMA estacional (SARIMA) se forma incluyendo términos estacionales adicionales en los modelos ARIMA que hemos visto hasta ahora. Se escribe de la siguiente manera:
+
+$$ARIMA(p,d,q) \times (P,D,Q)_m$$
+
+donde:
+
+- $(p,d,q)$ = componente no estacional
+- $(P,D,Q)$ = componente estacional
+- $m$ = período estacional por año (12 para mensual, 4 para trimestral)
+
+La parte estacional del modelo consiste en términos que son similares a los componentes no estacionales del modelo, pero que involucran desplazamientos hacia atrás (backshifts) del periodo estacional.
+
+**Ejemplo**: $ARIMA(1,1,1)(1,1,1)_4$ sin contaste para datos trimestrales (m = 4) tenemos el siguiente modelo :
+
+$$
+(1 - \phi_{1}L)(1 - \Phi_{1}L^{4}) (1 - L)(1 - L^{4})y_{t} =  (1 + \theta_{1}L)(1 + \Theta_{1}L^{4})\varepsilon_{t}.
+$$
+
+- Los términos estacionales adicionales simplemente se multiplican por los términos no estacionales.
+
+## ACF/PACF en modelos SARIMA
+
+- La parte estacional de un modelo AR o MA se verá reflejada en los rezagos estacionales de la PACF y la ACF. Por ejemplo, un modelo ARIMA(0,0,0)(0,0,1)12 mostrará:
+  - Un pico en el rezago 12 en la ACF, pero ningún otro pico significativo;
+  - Un decaimiento exponencial en los rezagos estacionales de la PACF (es decir, en los rezagos 12, 24, 36, …).
+
+- Del mismo modo, un modelo ARIMA(0,0,0)(1,0,0)12 mostrará:
+  - Un decaimiento exponencial en los rezagos estacionales de la ACF;
+  - Un único pico significativo en el rezago 12 de la PACF.
+
+- Al considerar los órdenes estacionales apropiados para un modelo ARIMA estacional, **realice la diferenciación del rezago estacional**.
+
+$$
+\Delta y_{t, 12} = y_{t, 12} - y_{t - 1, 12}
+$$
+
+- El procedimiento de modelado es casi el mismo que para los datos no estacionales, excepto que necesitamos seleccionar términos AR y MA estacionales, así como los componentes no estacionales del modelo.
+
+## Ejemplo 1. Empleo mensual en el sector de ocio y hostelería en EE. UU
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.tsa.stattools import adfuller, kpss
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.stats.diagnostic import acorr_ljungbox
+from statsmodels.tsa.arima.model import ARIMA
+from pmdarima import auto_arima
+import warnings
+warnings.filterwarnings('ignore')
+
+datos = pd.read_csv("../data/us_employment.csv", parse_dates=["ds"])
+datos = datos.loc[(datos["ds"] >= "2001-01-01") & (datos["unique_id"] == "Leisure and Hospitality")].reset_index(drop=True)
+datos["y"] = datos["y"] / 1e3
+datos = datos.set_index('ds')
+datos.index = pd.DatetimeIndex(datos.index).to_period('M').to_timestamp()
+
+fig, ax = plt.subplots(figsize=(12, 6))
+ax.plot(datos.index, datos["y"], color='steelblue', linewidth=2)
+ax.set_title('Empleo mensual en el sector de ocio y hostelería en EE. UU')
+ax.set_xlabel('Mes')
+ax.set_ylabel('Personas en millones')
+ax.grid()
+plt.show()
+```
+
+Los datos son claramente no estacionarios, con una fuerte estacionalidad y una tendencia no lineal, por lo que primero tomaremos una diferencia estacional. Los datos con diferencia estacional se muestran en la figura siguiente.
+
+```{python}
+#| include: false
+
+datos_diff_12 = datos.y.diff(12).dropna()
+
+fig, axes = plt.subplots(2, 1, figsize=(10, 6))
+plot_acf(datos_diff_12, ax=axes[0], title=f'ACF - Diff estacional 12')
+plot_pacf(datos_diff_12, ax=axes[1], title=f'PACF - Diff estacional 12')
+plt.tight_layout()
+plt.show()
+```
+
+Estos también son claramente no estacionarios, por lo que tomamos una primera diferencia adicional, ver figura adicional
+
+```{python}
+#| include: false
+
+datos_ddiff_12 = datos_diff_12.diff().dropna()
+
+fig, axes = plt.subplots(2, 1, figsize=(10, 6))
+plot_acf(datos_ddiff_12, ax=axes[0], title=f'ACF - Diff no-estacional y diff estacional 12')
+plot_pacf(datos_ddiff_12, ax=axes[1], title=f'PACF - Diff no-estacional y diff estacional 12')
+plt.tight_layout()
+plt.show()
+```
+
+```python
+#| include: false
+arima012011 = ARIMA(datos_ddiff_12, order=(0, 1, 2), seasonal_order=(0, 1, 1)),
+arima210011  = ARIMA(datos_ddiff_12, order=(2, 1, 0), seasonal_order=(0, 1, 1))
+autoairma = auto_arima(datos_ddiff_12, seasonal=True, m=12, stepwise=False, approximation=False) # Búsqueda exhaustiva (revisa todas las combinaciones)
+```
+
+## Ejercicio 2. Tarea para la casa
+
+Considera `aus_arrivals.csv` (está en la carpeta datos del repositorio en github), el número trimestral de visitantes internacionales a Australia desde varios países para el periodo 1981 Q1 – 2012 Q3.
+a. Selecciona los viajas hacia Estados Unidos (US) y describe el gráfico de tiempo.
+b. Utiliza la diferenciación para obtener datos estacionarios.
+c. ¿Qué puedes identificar en el gráfico ACF de los datos diferenciados?
+d. ¿Qué puedes identificar en el gráfico PACF de los datos diferenciados?
+e. ¿Qué modelo sugieren estos gráficos?
+f. ¿La función ARIMA() produce el mismo modelo que elegiste? Si no es así, ¿qué modelo crees que es mejor?
+g. Escribe el modelo en términos del operador de desplazamiento hacia atrás (backshift), y luego sin usar el operador de desplazamiento hacia atrás.
+
+## ARIMAX: Modelos con Variables Exógenas
+
+$$\phi(B)(1-B)^d Y_t = \beta X_t + \theta(B)\varepsilon_t$$
+
+**Casos de uso**:
+
+- Incorporar variables explicativas (precio, temperatura, etc.)
+- Análisis de impacto de políticas
+- Eventos especiales (días festivos)
+- Marketing mix modeling
