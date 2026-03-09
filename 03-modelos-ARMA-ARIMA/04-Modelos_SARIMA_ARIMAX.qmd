@@ -87,51 +87,13 @@ ax.grid()
 plt.show()
 ```
 
-Los datos son claramente no estacionarios, con una fuerte estacionalidad y una tendencia no lineal, por lo que primero tomaremos una diferencia estacional. Los datos con diferencia estacional se muestran en la figura siguiente.
-
-```{python}
-#| include: false
-
-datos_diff_12 = datos.y.diff(12).dropna()
-
-fig, axes = plt.subplots(2, 1, figsize=(10, 6))
-plot_acf(datos_diff_12, ax=axes[0], title=f'ACF - Diff estacional 12')
-plot_pacf(datos_diff_12, ax=axes[1], title=f'PACF - Diff estacional 12')
-plt.tight_layout()
-plt.show()
-```
-
-Estos también son claramente no estacionarios, por lo que tomamos una primera diferencia adicional, ver figura adicional
-
-```{python}
-#| include: false
-
-datos_ddiff_12 = datos_diff_12.diff().dropna()
-
-fig, axes = plt.subplots(2, 1, figsize=(10, 6))
-plot_acf(datos_ddiff_12, ax=axes[0], title=f'ACF - Diff no-estacional y diff estacional 12')
-plot_pacf(datos_ddiff_12, ax=axes[1], title=f'PACF - Diff no-estacional y diff estacional 12')
-plt.tight_layout()
-plt.show()
-```
-
-```python
-#| include: false
-arima012011 = ARIMA(datos_ddiff_12, order=(0, 1, 2), seasonal_order=(0, 1, 1)),
-arima210011  = ARIMA(datos_ddiff_12, order=(2, 1, 0), seasonal_order=(0, 1, 1))
-autoairma = auto_arima(datos_ddiff_12, seasonal=True, m=12, stepwise=False, approximation=False) # Búsqueda exhaustiva (revisa todas las combinaciones)
-```
 
 ## Ejercicio 2. Tarea para la casa
 
 Considera `aus_arrivals.csv` (está en la carpeta datos del repositorio en github), el número trimestral de visitantes internacionales a Australia desde varios países para el periodo 1981 Q1 – 2012 Q3.
 a. Selecciona los viajas hacia Estados Unidos (US) y describe el gráfico de tiempo.
-b. Utiliza la diferenciación para obtener datos estacionarios.
-c. ¿Qué puedes identificar en el gráfico ACF de los datos diferenciados?
-d. ¿Qué puedes identificar en el gráfico PACF de los datos diferenciados?
-e. ¿Qué modelo sugieren estos gráficos?
-f. ¿La función ARIMA() produce el mismo modelo que elegiste? Si no es así, ¿qué modelo crees que es mejor?
-g. Escribe el modelo en términos del operador de desplazamiento hacia atrás (backshift), y luego sin usar el operador de desplazamiento hacia atrás.
+b. Estima el mejor modelo SARIMA y realiza el pronostico a 3 años.
+g. Escribe la ecuación final del modelo.
 
 ## ARIMAX: Modelos con Variables Exógenas
 
