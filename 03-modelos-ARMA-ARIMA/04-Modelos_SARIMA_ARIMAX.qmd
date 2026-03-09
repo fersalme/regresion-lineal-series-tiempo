@@ -64,13 +64,6 @@ $$
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from statsmodels.tsa.stattools import adfuller, kpss
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.stats.diagnostic import acorr_ljungbox
-from statsmodels.tsa.arima.model import ARIMA
-from pmdarima import auto_arima
-import warnings
-warnings.filterwarnings('ignore')
 
 datos = pd.read_csv("../data/us_employment.csv", parse_dates=["ds"])
 datos = datos.loc[(datos["ds"] >= "2001-01-01") & (datos["unique_id"] == "Leisure and Hospitality")].reset_index(drop=True)
@@ -91,9 +84,9 @@ plt.show()
 ## Ejercicio 2. Tarea para la casa
 
 Considera `aus_arrivals.csv` (está en la carpeta datos del repositorio en github), el número trimestral de visitantes internacionales a Australia desde varios países para el periodo 1981 Q1 – 2012 Q3.
-a. Selecciona los viajas hacia Estados Unidos (US) y describe el gráfico de tiempo.
-b. Estima el mejor modelo SARIMA y realiza el pronostico a 3 años.
-g. Escribe la ecuación final del modelo.
+- Selecciona los viajas hacia Estados Unidos (US) y describe el gráfico de tiempo.
+- Estima el mejor modelo SARIMA y realiza el pronostico a 3 años.
+- Escribe la ecuación final del modelo.
 
 ## ARIMAX: Modelos con Variables Exógenas
 
