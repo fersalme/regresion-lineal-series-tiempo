@@ -88,13 +88,56 @@ Considera `aus_arrivals.csv` (está en la carpeta datos del repositorio en githu
 - Estima el mejor modelo SARIMA y realiza el pronostico a 3 años.
 - Escribe la ecuación final del modelo.
 
+## Ejercicio 3: Ventas de medicamentos corticosteroides en Australia
+
+- Para nuestro tercer ejemplo, intentaremos pronosticar las ventas mensuales de medicamentos corticosteroides en Australia. Estos se conocen como fármacos H02 bajo el sistema de clasificación Anatómica, Terapéutica y Química.
+
+- Datos: `PBS_unparsed`. Filtrar ATC2 == "H02". 
+
 ## ARIMAX: Modelos con Variables Exógenas
 
-$$\phi(B)(1-B)^d Y_t = \beta X_t + \theta(B)\varepsilon_t$$
+- Los modelos de series temporales anteriores permiten incluir información proveniente de observaciones pasadas de una serie, pero no permiten incorporar otra información que también puede ser relevante. 
+- Por ejemplo, los efectos de días festivos, la actividad de competidores, cambios en la legislación, la situación económica general u otras variables externas pueden explicar parte de la variación histórica y conducir a pronósticos más precisos. 
+
+- Usualmente realizaríamos este modelo :
+$$
+y_t = \beta_0 + \beta_1 x_{1,t} + \dots + \beta_k x_{k,t} + \varepsilon_t \\
+\varepsilon_t \sim WN
+$$
+
+## Modelo ARIMAX
+
+- El modelo ARIMAX extiende el modelo ARIMA para incluir otras variables que mejore la capacidad del modelo en el pronóstico.
 
 **Casos de uso**:
-
 - Incorporar variables explicativas (precio, temperatura, etc.)
 - Análisis de impacto de políticas
 - Eventos especiales (días festivos)
-- Marketing mix modeling
+
+- Sin embargo, los residuos un modelo inicial entre $y_t$ y $x_t$ tiene un problema de autocorrelación. **El modelo ARIMA explicitamente modela la autocorrelación y es aplicado en el término de error del modelo.**
+- Para ello los errores del modelo entre $y_t$ y $x_t$ es reemplazado por $\eta_t$ que tiene autocorrelación.
+- Esta autocorrelación es modelada por ARIMA y los errores $\varepsilon_t$ son $WN$.
+$$
+ y_t = \beta_0 + \beta_1 x_{1,t} + \dots + \beta_k x_{k,t} + \eta_t \\
+(1-\phi_1B)(1-B)\eta_t = (1+\theta_1B)\varepsilon_t \\
+\varepsilon_t \sim WN
+$$
+
+- Cuando estimamos los parámetros del modelo, necesitamos minimizar la suma de los valores de $\varepsilon_t^2$​. Si minimizamos, en cambio, la suma de los valores de $\eta_t^2$​ (que es lo que ocurriría si estimáramos el modelo de regresión ignorando las autocorrelaciones en los errores) los estimadores son inconsistentes.
+
+::::: {.callout}
+Todas las variables de un modelo de regresión con errores ARMA deben ser estacionarias antes de estimarlo. Por lo tanto, primero se debe verificar que $y_t$ y todos los predictores $x_{1,t}, \ldots, x_{k,t}$ sean estacionarios. Si se estima el modelo cuando alguna de estas variables es no estacionaria, los coeficientes obtenidos no serán estimadores consistentes (y, por lo tanto, pueden no ser significativos).
+:::
+
+
+## Ejemplo 1 : El modelo macroeconómico del crecimiento del consumo en Estados Unidos
+
+- Queremos modelar cómo cambia el consumo real (compra de bienes y servicios) de una economía según el incremento del ingreso.
+$$
+\Delta C_t = \beta_0 + \beta_1 \Delta Ingreso_t + \varepsilon_t
+$$
+
+- $\Delta C_t$ es el cambio porcentual en el gasto real de consumo personal.
+- $Ingreso_t$​ es el cambio porcentual en el ingreso personal real disponible.
+
+- Usar el archivo `US_change.csv` para modelar.

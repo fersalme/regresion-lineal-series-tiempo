@@ -1108,33 +1108,26 @@ Curso de Series de Tiempo
 </section>
 <section id="ejemplo-1.-empleo-mensual-en-el-sector-de-ocio-y-hostelería-en-ee.-uu" class="slide level2">
 <h2>Ejemplo 1. Empleo mensual en el sector de ocio y hostelería en EE. UU</h2>
-<div id="25a20a5b" class="cell" data-execution_count="1">
+<div id="dd8a43d9" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-4"><a href></a><span class="im">from</span> statsmodels.tsa.stattools <span class="im">import</span> adfuller, kpss</span>
-<span id="cb1-5"><a href></a><span class="im">from</span> statsmodels.graphics.tsaplots <span class="im">import</span> plot_acf, plot_pacf</span>
-<span id="cb1-6"><a href></a><span class="im">from</span> statsmodels.stats.diagnostic <span class="im">import</span> acorr_ljungbox</span>
-<span id="cb1-7"><a href></a><span class="im">from</span> statsmodels.tsa.arima.model <span class="im">import</span> ARIMA</span>
-<span id="cb1-8"><a href></a><span class="im">from</span> pmdarima <span class="im">import</span> auto_arima</span>
-<span id="cb1-9"><a href></a><span class="im">import</span> warnings</span>
-<span id="cb1-10"><a href></a>warnings.filterwarnings(<span class="st">&#39;ignore&#39;</span>)</span>
-<span id="cb1-11"><a href></a></span>
-<span id="cb1-12"><a href></a>datos <span class="op">=</span> pd.read_csv(<span class="st">&quot;../data/us_employment.csv&quot;</span>, parse_dates<span class="op">=</span>[<span class="st">&quot;ds&quot;</span>])</span>
-<span id="cb1-13"><a href></a>datos <span class="op">=</span> datos.loc[(datos[<span class="st">&quot;ds&quot;</span>] <span class="op">&gt;=</span> <span class="st">&quot;2001-01-01&quot;</span>) <span class="op">&amp;</span> (datos[<span class="st">&quot;unique_id&quot;</span>] <span class="op">==</span> <span class="st">&quot;Leisure and Hospitality&quot;</span>)].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb1-14"><a href></a>datos[<span class="st">&quot;y&quot;</span>] <span class="op">=</span> datos[<span class="st">&quot;y&quot;</span>] <span class="op">/</span> <span class="fl">1e3</span></span>
-<span id="cb1-15"><a href></a>datos <span class="op">=</span> datos.set_index(<span class="st">&#39;ds&#39;</span>)</span>
-<span id="cb1-16"><a href></a>datos.index <span class="op">=</span> pd.DatetimeIndex(datos.index).to_period(<span class="st">&#39;M&#39;</span>).to_timestamp()</span>
-<span id="cb1-17"><a href></a></span>
-<span id="cb1-18"><a href></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
-<span id="cb1-19"><a href></a>ax.plot(datos.index, datos[<span class="st">&quot;y&quot;</span>], color<span class="op">=</span><span class="st">&#39;steelblue&#39;</span>, linewidth<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb1-20"><a href></a>ax.set_title(<span class="st">&#39;Empleo mensual en el sector de ocio y hostelería en EE. UU&#39;</span>)</span>
-<span id="cb1-21"><a href></a>ax.set_xlabel(<span class="st">&#39;Mes&#39;</span>)</span>
-<span id="cb1-22"><a href></a>ax.set_ylabel(<span class="st">&#39;Personas en millones&#39;</span>)</span>
-<span id="cb1-23"><a href></a>ax.grid()</span>
-<span id="cb1-24"><a href></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-4"><a href></a></span>
+<span id="cb1-5"><a href></a>datos <span class="op">=</span> pd.read_csv(<span class="st">&quot;../data/us_employment.csv&quot;</span>, parse_dates<span class="op">=</span>[<span class="st">&quot;ds&quot;</span>])</span>
+<span id="cb1-6"><a href></a>datos <span class="op">=</span> datos.loc[(datos[<span class="st">&quot;ds&quot;</span>] <span class="op">&gt;=</span> <span class="st">&quot;2001-01-01&quot;</span>) <span class="op">&amp;</span> (datos[<span class="st">&quot;unique_id&quot;</span>] <span class="op">==</span> <span class="st">&quot;Leisure and Hospitality&quot;</span>)].reset_index(drop<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-7"><a href></a>datos[<span class="st">&quot;y&quot;</span>] <span class="op">=</span> datos[<span class="st">&quot;y&quot;</span>] <span class="op">/</span> <span class="fl">1e3</span></span>
+<span id="cb1-8"><a href></a>datos <span class="op">=</span> datos.set_index(<span class="st">&#39;ds&#39;</span>)</span>
+<span id="cb1-9"><a href></a>datos.index <span class="op">=</span> pd.DatetimeIndex(datos.index).to_period(<span class="st">&#39;M&#39;</span>).to_timestamp()</span>
+<span id="cb1-10"><a href></a></span>
+<span id="cb1-11"><a href></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
+<span id="cb1-12"><a href></a>ax.plot(datos.index, datos[<span class="st">&quot;y&quot;</span>], color<span class="op">=</span><span class="st">&#39;steelblue&#39;</span>, linewidth<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb1-13"><a href></a>ax.set_title(<span class="st">&#39;Empleo mensual en el sector de ocio y hostelería en EE. UU&#39;</span>)</span>
+<span id="cb1-14"><a href></a>ax.set_xlabel(<span class="st">&#39;Mes&#39;</span>)</span>
+<span id="cb1-15"><a href></a>ax.set_ylabel(<span class="st">&#39;Personas en millones&#39;</span>)</span>
+<span id="cb1-16"><a href></a>ax.grid()</span>
+<span id="cb1-17"><a href></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
@@ -1147,17 +1140,59 @@ Curso de Series de Tiempo
 </section>
 <section id="ejercicio-2.-tarea-para-la-casa" class="slide level2">
 <h2>Ejercicio 2. Tarea para la casa</h2>
-<p>Considera <code>aus_arrivals.csv</code> (está en la carpeta datos del repositorio en github), el número trimestral de visitantes internacionales a Australia desde varios países para el periodo 1981 Q1 – 2012 Q3. a. Selecciona los viajas hacia Estados Unidos (US) y describe el gráfico de tiempo. b. Estima el mejor modelo SARIMA y realiza el pronostico a 3 años. g. Escribe la ecuación final del modelo.</p>
+<p>Considera <code>aus_arrivals.csv</code> (está en la carpeta datos del repositorio en github), el número trimestral de visitantes internacionales a Australia desde varios países para el periodo 1981 Q1 – 2012 Q3. - Selecciona los viajas hacia Estados Unidos (US) y describe el gráfico de tiempo. - Estima el mejor modelo SARIMA y realiza el pronostico a 3 años. - Escribe la ecuación final del modelo.</p>
+</section>
+<section id="ejercicio-3-ventas-de-medicamentos-corticosteroides-en-australia" class="slide level2">
+<h2>Ejercicio 3: Ventas de medicamentos corticosteroides en Australia</h2>
+<ul>
+<li><p>Para nuestro tercer ejemplo, intentaremos pronosticar las ventas mensuales de medicamentos corticosteroides en Australia. Estos se conocen como fármacos H02 bajo el sistema de clasificación Anatómica, Terapéutica y Química.</p></li>
+<li><p>Datos: <code>PBS_unparsed</code>. Filtrar ATC2 == “H02”.</p></li>
+</ul>
 </section>
 <section id="arimax-modelos-con-variables-exógenas" class="slide level2">
 <h2>ARIMAX: Modelos con Variables Exógenas</h2>
-<p><span class="math display">\[\phi(B)(1-B)^d Y_t = \beta X_t + \theta(B)\varepsilon_t\]</span></p>
-<p><strong>Casos de uso</strong>:</p>
 <ul>
-<li>Incorporar variables explicativas (precio, temperatura, etc.)</li>
-<li>Análisis de impacto de políticas</li>
-<li>Eventos especiales (días festivos)</li>
-<li>Marketing mix modeling</li>
+<li><p>Los modelos de series temporales anteriores permiten incluir información proveniente de observaciones pasadas de una serie, pero no permiten incorporar otra información que también puede ser relevante.</p></li>
+<li><p>Por ejemplo, los efectos de días festivos, la actividad de competidores, cambios en la legislación, la situación económica general u otras variables externas pueden explicar parte de la variación histórica y conducir a pronósticos más precisos.</p></li>
+<li><p>Usualmente realizaríamos este modelo : <span class="math display">\[
+y_t = \beta_0 + \beta_1 x_{1,t} + \dots + \beta_k x_{k,t} + \varepsilon_t \\
+\varepsilon_t \sim WN
+\]</span></p></li>
+</ul>
+</section>
+<section id="modelo-arimax" class="slide level2">
+<h2>Modelo ARIMAX</h2>
+<ul>
+<li>El modelo ARIMAX extiende el modelo ARIMA para incluir otras variables que mejore la capacidad del modelo en el pronóstico.</li>
+</ul>
+<p><strong>Casos de uso</strong>: - Incorporar variables explicativas (precio, temperatura, etc.) - Análisis de impacto de políticas - Eventos especiales (días festivos)</p>
+<ul>
+<li><p>Sin embargo, los residuos un modelo inicial entre <span class="math inline">\(y_t\)</span> y <span class="math inline">\(x_t\)</span> tiene un problema de autocorrelación. <strong>El modelo ARIMA explicitamente modela la autocorrelación y es aplicado en el término de error del modelo.</strong></p></li>
+<li><p>Para ello los errores del modelo entre <span class="math inline">\(y_t\)</span> y <span class="math inline">\(x_t\)</span> es reemplazado por <span class="math inline">\(\eta_t\)</span> que tiene autocorrelación.</p></li>
+<li><p>Esta autocorrelación es modelada por ARIMA y los errores <span class="math inline">\(\varepsilon_t\)</span> son <span class="math inline">\(WN\)</span>. <span class="math display">\[
+y_t = \beta_0 + \beta_1 x_{1,t} + \dots + \beta_k x_{k,t} + \eta_t \\
+(1-\phi_1B)(1-B)\eta_t = (1+\theta_1B)\varepsilon_t \\
+\varepsilon_t \sim WN
+\]</span></p></li>
+<li><p>Cuando estimamos los parámetros del modelo, necesitamos minimizar la suma de los valores de <span class="math inline">\(\varepsilon_t^2\)</span>​. Si minimizamos, en cambio, la suma de los valores de <span class="math inline">\(\eta_t^2\)</span>​ (que es lo que ocurriría si estimáramos el modelo de regresión ignorando las autocorrelaciones en los errores) los estimadores son inconsistentes.</p></li>
+</ul>
+<div class="callout callout-none no-icon callout-style-simple">
+<div class="callout-body">
+<div class="callout-content">
+<p>Todas las variables de un modelo de regresión con errores ARMA deben ser estacionarias antes de estimarlo. Por lo tanto, primero se debe verificar que <span class="math inline">\(y_t\)</span> y todos los predictores <span class="math inline">\(x_{1,t}, \ldots, x_{k,t}\)</span> sean estacionarios. Si se estima el modelo cuando alguna de estas variables es no estacionaria, los coeficientes obtenidos no serán estimadores consistentes (y, por lo tanto, pueden no ser significativos).</p>
+</div>
+</div>
+</div>
+</section>
+<section id="ejemplo-1-el-modelo-macroeconómico-del-crecimiento-del-consumo-en-estados-unidos" class="slide level2">
+<h2>Ejemplo 1 : El modelo macroeconómico del crecimiento del consumo en Estados Unidos</h2>
+<ul>
+<li><p>Queremos modelar cómo cambia el consumo real (compra de bienes y servicios) de una economía según el incremento del ingreso. <span class="math display">\[
+\Delta C_t = \beta_0 + \beta_1 \Delta Ingreso_t + \varepsilon_t
+\]</span></p></li>
+<li><p><span class="math inline">\(\Delta C_t\)</span> es el cambio porcentual en el gasto real de consumo personal.</p></li>
+<li><p><span class="math inline">\(Ingreso_t\)</span>​ es el cambio porcentual en el ingreso personal real disponible.</p></li>
+<li><p>Usar el archivo <code>US_change.csv</code> para modelar.</p></li>
 </ul>
 
 </section>
