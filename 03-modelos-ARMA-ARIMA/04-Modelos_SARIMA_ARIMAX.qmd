@@ -130,7 +130,7 @@ Todas las variables de un modelo de regresión con errores ARMA deben ser estaci
 :::
 
 
-## Ejemplo 1 : El modelo macroeconómico del crecimiento del consumo en Estados Unidos
+## Ejemplo 2 : El modelo macroeconómico del crecimiento del consumo en Estados Unidos
 
 - Queremos modelar cómo cambia el consumo real (compra de bienes y servicios) de una economía según el incremento del ingreso.
 $$
@@ -141,3 +141,40 @@ $$
 - $Ingreso_t$​ es el cambio porcentual en el ingreso personal real disponible.
 
 - Usar el archivo `US_change.csv` para modelar.
+
+## Modelo ARIMAX con rezagos
+
+- A veces, el impacto de un predictor en un modelo de regresión no será simple ni inmediato. Por ejemplo, una campaña publicitaria puede influir en las ventas durante algún tiempo después de que finalice la campaña, y las ventas de un mes dependerán del gasto en publicidad de cada uno de los meses anteriores. 
+
+- De manera similar, un cambio en la política de seguridad de una empresa puede reducir los accidentes de forma inmediata, pero puede tener un **efecto decreciente con el tiempo** a medida que los empleados se familiarizan con las nuevas condiciones de trabajo y prestan menos atención.
+
+- En estas situaciones, es necesario incluir **efectos rezagados del predictor**. Supongamos que solo tenemos un predictor en nuestro modelo. Entonces, un modelo que permita efectos rezagados puede escribirse como
+
+$$
+y_t = \beta_0 + \gamma_0x_t + \gamma_1 x_{t-1} + \dots + \gamma_k x_{t-k} + \eta_t
+$$
+
+Donde $\eta_t$ es un proceso ARIMA. El número de rezago $k$ se puede definir con un criterio de información AIC en conjunto con los términos $p$ y $q$ del proceso ARIMA.
+
+## Ejemplo 3 : Gasto en publicidad por televisión y cotizaciones de seguros
+
+Una empresa de seguro en EEUU está interesada en saber si el gasto en publicidad por televisión influye en el valor de los aportes de aseguramiento. Para ello tiene dos series de tiempo, uno con el gasto en publicidad y la otra en aportes de seguro que realiza los clientes.
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+
+seguros = pd.read_csv('../data/insurance.csv', parse_dates=['ds'])
+seguros = seguros.set_index('ds')
+seguros.index = pd.DatetimeIndex(seguros.index).to_period('M').to_timestamp()
+
+fig, axes = plt.subplots(2, sharex=True)
+axes[0].plot(seguros.index, seguros["Quotes"], label = "Aportes")
+axes[0].legend(loc='upper left')
+axes[1].plot(seguros.index, seguros["TVadverts"], label = "Gasto en publicidad")
+axes[1].legend(loc='upper left')
+axes[1].set(xlabel="Meses")
+fig.suptitle("Gasto en publicidad por televisión y cotizaciones de seguros")
+plt.show()
+
+```

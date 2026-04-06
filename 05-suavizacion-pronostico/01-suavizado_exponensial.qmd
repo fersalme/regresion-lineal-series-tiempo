@@ -1,0 +1,179 @@
+---
+title: "Métodos de suavizamiento exponencial en series de tiempo"
+subtitle: "Modelo y pronóstico"
+author: "Fernando Salcedo Mejía Eco, Ms"
+afi: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
+date: "Febrero 2026"
+format:
+  revealjs:
+    theme: [default, src/theme/style.scss]
+    slide-number: true
+    transition: fade
+    scrollable: true
+    code-fold: true
+    embed-resources: true
+    echo: true
+    logo: src/img/logo_utb.png
+    footer: "UTB-ETD | Programa de Ciencia de Datos"
+title-slide-attributes:
+    data-background-image: src/img/plantilla-inicio.png
+    data-background-opacity: "0.6"
+---
+
+# Introducción
+
+## ¿Qué son los modelos con suavización?
+
+::::: {.callout-note}
+Los pronósticos producidos mediante métodos de suavizamiento exponencial son promedios ponderados de observaciones pasadas, con ponderaciones que decrecen exponencialmente a medida que las observaciones se vuelven más antiguas
+:::
+
+- El método naïve supone que la observación más reciente es la única importante, y que todas las observaciones anteriores no proporcionan información para el futuro.
+$$
+\hat{y}_{T+h|T} = y_{T}, \space h = 1, 2, \dots
+$$
+
+- Utilizando el método del promedio, todos los pronósticos futuros son iguales a un promedio simple de los datos observados.
+
+$$
+\hat{y}_{T+h|T} = \frac1T \sum_{t=1}^T y_t, \space h = 1, 2, \dots
+$$
+
+## Suavizamiento Exponencial Simple (SES)
+
+::: {.callout-important}
+Este método es adecuado para pronosticar datos sin una tendencia clara ni un patrón estacional.
+:::
+
+- Los pronósticos se calculan utilizando promedios ponderados, donde las ponderaciones disminuyen exponencialmente a medida que las observaciones provienen de períodos más lejanos en el pasado. A este se le conoce como Suavizamiento Exponencial Simple (SES).
+
+$$
+\hat{y}_{T+1|T} = \alpha y_T + \alpha(1-\alpha) y_{T-1} + \alpha(1-\alpha)^2 y_{T-2}+ \cdots, \space 0 \le \alpha \le 1 \\
+\hat{y}_{T+1|T}  =  \sum_{j=0}^{T-1} \alpha(1-\alpha)^j y_{T-j} + (1-\alpha)^T \ell_{0}.
+$$
+
+- Donde el primer valor ajustado en el tiempo 1 se denota por $\ell_{0}$
+
+- Se suele escribir también en **forma en componentes**. Es útil para agregar otros componentes al modelo como la tendencia y la estacionalidad.
+$$
+\begin{align*}
+\text{Ecuación de pronóstico} && \hat{y}_{t+h|t} = \ell_{t} \\
+\text{Ecuación de suavizado} && \ell_{t} = \alpha y_{t} + (1 - \alpha)\ell_{t-1}
+\end{align*}
+$$
+
+- Donde $\ell_{t}$ es el nivel (o el valor suavizado) de la serie en el tiempo $t$. Al fijar $h = 1$ se obtienen los valores ajustados, mientras que al fijar $t = T$ se obtienen los pronósticos más allá de los datos de entrenamiento.
+
+### Selección de parámetros
+
+- La aplicación de SES requiere la selección de los parámetros de suavizamiento $\alpha$ y de los valores iniciales $\ell_{0}$. Los parámetros desconocidos pueden estimarse minimizando el SSE (suma de los errores al cuadrado)
+
+$$
+\text{SSE}=\sum_{t=1}^T(y_t - \hat{y}_{t|t-1})^2=\sum_{t=1}^Te_t^2
+$$
+
+
+## Método de Holt (SES con tendencia)
+
+- Holt (1957) amplió el suavizamiento exponencial simple para permitir el pronóstico de datos con tendencia. Este método incluye una ecuación de pronóstico y dos ecuaciones de suavizamiento (una para el nivel y otra para la tendencia):
+
+$$
+\begin{align*}
+  \text{Ecuación de pronóstico}&& \hat{y}_{t+h|t} = \ell_{t} + hb_{t} \\
+  \text{Ecuación nivel}   && \ell_{t} = \alpha y_{t} + (1 - \alpha)(\ell_{t-1} + b_{t-1})\\
+  \text{Ecuación tendencia}   && b_{t}    = \beta^*(\ell_{t} - \ell_{t-1}) + (1 -\beta^*)b_{t-1}
+\end{align*}
+$$
+
+- Donde :
+  - $\ell_{t}$ denota una estimación del nivel de la serie en el tiempo $t$ 
+  - $b_t$ denota una estimación de la tendencia (pendiente) de la serie en el tiempo $t$
+  - $\alpha$ es el parámetro de suavizamiento para el nivel, $0 \le \alpha \le 1$
+  - $\beta^*$ es el parámetro de suavizamiento para la tendencia, $0 \le \beta^* \le 1$
+
+
+## Holt tendencia amortiguada
+
+- Los pronósticos generados por el método lineal de Holt presentan una tendencia constante (creciente o decreciente) que se prolonga indefinidamente hacia el futuro. 
+- La evidencia empírica indica que estos métodos tienden a sobrestimar, especialmente para horizontes de pronóstico largos. Motivados por esta observación, Gardner y McKenzie (1985) introdujeron un parámetro que “amortigua” la tendencia hasta convertirla en una línea plana en algún momento futuro.
+- Partimos del método de Holt con tendencia creciente:
+
+$$
+\begin{align*}
+  \hat{y}_{t+h|t} &= \ell_{t} + (\phi+\phi^2 + \dots + \phi^{h})b_{t} \\
+  \ell_{t} &= \alpha y_{t} + (1 - \alpha)(\ell_{t-1} + \phi b_{t-1})\\
+  b_{t} &= \beta^*(\ell_{t} - \ell_{t-1}) + (1 -\beta^*)\phi b_{t-1} \\
+  0<\phi<1
+\end{align*}
+$$
+
+- Esto significa que los pronósticos de corto plazo presentan tendencia, mientras que los pronósticos de largo plazo son constantes. 
+- Si \phi = 1 -> Holt con tendencia
+
+
+## Holt-Winters estacionalidad
+
+- Holt (1957) y Winters (1960) ampliaron el método de Holt para capturar la estacionalidad. - El método estacional de Holt-Winters comprende la ecuación de pronóstico y tres ecuaciones de suavizamiento: una para el nivel $\ell_t$, una para la tendencia $b_t$ₜ y una para el componente estacional $s_t$, con los parámetros de suavizamiento correspondientes $\alpha$, $\beta^*$ y $\gamma$.
+
+- Existen dos variantes de este método que difieren en la naturaleza del componente estacional. : aditivo y multiplicativo
+
+- El método aditivo : se prefiere cuando las variaciones estacionales son aproximadamente constantes a lo largo de la serie
+$$
+\begin{align*}
+  \hat{y}_{t+h|t} &= \ell_{t} + hb_{t} + s_{t+h-m(k+1)} \\
+  \ell_{t} &= \alpha(y_{t} - s_{t-m}) + (1 - \alpha)(\ell_{t-1} + b_{t-1})\\
+  b_{t} &= \beta^*(\ell_{t} - \ell_{t-1}) + (1 - \beta^*)b_{t-1}\\
+  s_{t} &= \gamma (y_{t}-\ell_{t-1}-b_{t-1}) + (1-\gamma)s_{t-m},
+\end{align*}
+$$
+
+- El método multiplicativo se prefiere cuando las variaciones estacionales cambian de forma proporcional al nivel de la serie.
+
+$$
+\begin{align*}
+  \hat{y}_{t+h|t} &= (\ell_{t} + hb_{t})s_{t+h-m(k+1)} \\
+  \ell_{t} &= \alpha \frac{y_{t}}{s_{t-m}} + (1 - \alpha)(\ell_{t-1} + b_{t-1})\\
+  b_{t} &= \beta^*(\ell_{t}-\ell_{t-1}) + (1 - \beta^*)b_{t-1}                \\
+  s_{t} &= \gamma \frac{y_{t}}{(\ell_{t-1} + b_{t-1})} + (1 - \gamma)s_{t-m}.
+\end{align*}
+$$
+
+- La amortiguación es posible tanto con los métodos de Holt‑Winters aditivos como multiplicativos. **Un método que a menudo proporciona pronósticos precisos y robustos para datos estacionales es el método de Holt‑Winters con tendencia amortiguada y estacionalidad multiplicativa:**
+
+$$
+\begin{align*}
+  \hat{y}_{t+h|t} &= \left[\ell_{t} + (\phi+\phi^2 + \dots + \phi^{h})b_{t}\right]s_{t+h-m(k+1)} \\
+  \ell_{t} &= \alpha(y_{t} / s_{t-m}) + (1 - \alpha)(\ell_{t-1} + \phi b_{t-1})\\
+  b_{t} &= \beta^*(\ell_{t} - \ell_{t-1}) + (1 - \beta^*)\phi b_{t-1}             \\
+  s_{t} &= \gamma \frac{y_{t}}{(\ell_{t-1} + \phi b_{t-1})} + (1 - \gamma)s_{t-m}.
+\end{align*}
+$$
+
+## Taxonomía de los métodos de suavizamiento exponencial
+
+![](https://otexts.com/fpp3/figs/pegelstable-1.png){width="150%"}
+
+## Modelo ETS - Modelos de espacio de estados con innovaciones para el suavizamiento exponencial
+
+- Cada modelo consta de una ecuación de medición que describe los datos observados y de algunas ecuaciones de estado que describen cómo cambian a lo largo del tiempo los componentes no observados o estados (nivel, tendencia y estacionalidad).
+- Para cada método existen dos modelos: Uno con errores aditivos y otro con errores multiplicativos. 
+- Los pronósticos puntuales producidos por los modelos son idénticos si utilizan los mismos valores de los parámetros de suavizamiento. Sin embargo, generarán intervalos de predicción diferentes.
+
+$$
+y_t = \hat{y}_{t|t-1} + e_t
+$$
+
+$$
+y_t = \hat{y}_{t|t-1}\cdot (1 + e_t).
+$$
+
+## Modelos ETS
+
+![](https://otexts.com/fpp3/figs/statespacemodels-1.png){width="150%"}
+
+## Referencias
+
+::: {.references style="font-size: 0.7em;"}
+- Hyndman, R. J., & Athanasopoulos, G. (2021). *Forecasting: Principles and Practice*. 3rd ed. OTexts. Available at: https://otexts.com/fpp3/
+- Hamilton, J. D. (1994). *Time Series Analysis*. Princeton University Press.
+:::
