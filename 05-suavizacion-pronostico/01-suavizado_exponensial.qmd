@@ -72,7 +72,6 @@ $$
 \text{SSE}=\sum_{t=1}^T(y_t - \hat{y}_{t|t-1})^2=\sum_{t=1}^Te_t^2
 $$
 
-
 ## Método de Holt (SES con tendencia)
 
 - Holt (1957) amplió el suavizamiento exponencial simple para permitir el pronóstico de datos con tendencia. Este método incluye una ecuación de pronóstico y dos ecuaciones de suavizamiento (una para el nivel y otra para la tendencia):
@@ -120,10 +119,10 @@ $$
 - El método aditivo : se prefiere cuando las variaciones estacionales son aproximadamente constantes a lo largo de la serie
 $$
 \begin{align*}
-  \hat{y}_{t+h|t} &= \ell_{t} + hb_{t} + s_{t+h-m(k+1)} \\
-  \ell_{t} &= \alpha(y_{t} - s_{t-m}) + (1 - \alpha)(\ell_{t-1} + b_{t-1})\\
-  b_{t} &= \beta^*(\ell_{t} - \ell_{t-1}) + (1 - \beta^*)b_{t-1}\\
-  s_{t} &= \gamma (y_{t}-\ell_{t-1}-b_{t-1}) + (1-\gamma)s_{t-m},
+  \text{Ecuación de pronóstico}&& \hat{y}_{t+h|t} &= \ell_{t} + hb_{t} + s_{t+h-m(k+1)} \\
+  \text{Ecuación nivel}&& \ell_{t} &= \alpha(y_{t} - s_{t-m}) + (1 - \alpha)(\ell_{t-1} + b_{t-1})\\
+  \text{Ecuación tendencia}&& b_{t} &= \beta^*(\ell_{t} - \ell_{t-1}) + (1 - \beta^*)b_{t-1}\\
+  \text{Ecuación estacional}&& s_{t} &= \gamma (y_{t}-\ell_{t-1}-b_{t-1}) + (1-\gamma)s_{t-m}
 \end{align*}
 $$
 
@@ -131,10 +130,10 @@ $$
 
 $$
 \begin{align*}
-  \hat{y}_{t+h|t} &= (\ell_{t} + hb_{t})s_{t+h-m(k+1)} \\
-  \ell_{t} &= \alpha \frac{y_{t}}{s_{t-m}} + (1 - \alpha)(\ell_{t-1} + b_{t-1})\\
-  b_{t} &= \beta^*(\ell_{t}-\ell_{t-1}) + (1 - \beta^*)b_{t-1}                \\
-  s_{t} &= \gamma \frac{y_{t}}{(\ell_{t-1} + b_{t-1})} + (1 - \gamma)s_{t-m}.
+  \text{Ecuación de pronóstico}&& \hat{y}_{t+h|t} &= (\ell_{t} + hb_{t})s_{t+h-m(k+1)} \\
+  \text{Ecuación nivel}&& \ell_{t} &= \alpha \frac{y_{t}}{s_{t-m}} + (1 - \alpha)(\ell_{t-1} + b_{t-1})\\
+  \text{Ecuación tendencia}&& b_{t} &= \beta^*(\ell_{t}-\ell_{t-1}) + (1 - \beta^*)b_{t-1}                \\
+  \text{Ecuación estacional}&& s_{t} &= \gamma \frac{y_{t}}{(\ell_{t-1} + b_{t-1})} + (1 - \gamma)s_{t-m}.
 \end{align*}
 $$
 
@@ -151,25 +150,217 @@ $$
 
 ## Taxonomía de los métodos de suavizamiento exponencial
 
-![](https://otexts.com/fpp3/figs/pegelstable-1.png){width="150%"}
+| Tendencia/Estacionalidad | N (Ninguna) | A (Aditiva) | M (Multiplicativa) |
+|--------------------------|-------------|-------------|--------------------|
+| N (Ninguna)              | (N,N)       | (N,A)       | (N,M)              |
+| A (Aditiva)              | (A,N)       | (A,A)       | (A,M)              |
+| Ad (Aditiva amortiguada) | (Ad, N)     | (Ad,A)      | (Ad,M)             |
+
+- Descripción del modelo
+
+| Forma corta | Modelo                                           |
+|-------------|--------------------------------------------------|
+| (N,N)       | Suavizamiento Exponencial Simple (SES)           |
+| (A,N)       | Método de Holt (SES con tendencia)               |
+| (Ad,N)      | Método de Holt con tendencia amortiguada         |
+| (A,A)       | Método de Holt-Winters                           |
+| (A,M)       | Método de Holt-Winters multiplicativo            |
+| (Ad,M)      | Método de Holt-Winters con tendencia amortiguada |
 
 ## Modelo ETS - Modelos de espacio de estados con innovaciones para el suavizamiento exponencial
 
-- Cada modelo consta de una ecuación de medición que describe los datos observados y de algunas ecuaciones de estado que describen cómo cambian a lo largo del tiempo los componentes no observados o estados (nivel, tendencia y estacionalidad).
-- Para cada método existen dos modelos: Uno con errores aditivos y otro con errores multiplicativos. 
-- Los pronósticos puntuales producidos por los modelos son idénticos si utilizan los mismos valores de los parámetros de suavizamiento. Sin embargo, generarán intervalos de predicción diferentes.
+- Los modelos ETS constituyen una familia de modelos de series temporales. Pueden considerarse una generalización del suavizamiento exponencial simple para series temporales que contienen tendencias y estacionalidades. Además, cuentan con un modelo de espacio de estados subyacente.
+
+- Un modelo ETS se especifica mediante un tipo de error (E; aditivo o multiplicativo), un tipo de tendencia (T; aditiva o multiplicativa, ambas amortiguadas o no amortiguadas, o ninguna) y un tipo de estacionalidad (S; aditiva, multiplicativa o ninguna).
+
+$$
+ETS(Error = \{A,M\}, Tendencia =\{N,A,Ad\}, Estacional = \{N,A,M\})
+$$
+
+- Aditivo
 
 $$
 y_t = \hat{y}_{t|t-1} + e_t
 $$
 
+- Multiplicativo
+
 $$
-y_t = \hat{y}_{t|t-1}\cdot (1 + e_t).
+y_t = \hat{y}_{t|t-1}\cdot (1 + e_t)
 $$
 
-## Modelos ETS
+### ETS(A,N,N): suavizamiento exponencial simple con errores aditivos
 
-![](https://otexts.com/fpp3/figs/statespacemodels-1.png){width="150%"}
+$$
+\begin{align*}
+\text{Ecuación de pronóstico} && \hat{y}_{t+h|t} = \ell_{t} \\
+\text{Ecuación de suavizado} && \ell_{t} = \alpha y_{t} + (1 - \alpha)\ell_{t-1}
+\end{align*}
+$$
+
+- Si reordenamos la ecuación de suavizamiento del nivel, obtenemos la forma de corrección de errores:
+
+$$
+\begin{align*}
+\ell_{t} &= \alpha y_{t}+\ell_{t-1}-\alpha\ell_{t-1}\\
+         &= \ell_{t-1}+\alpha( y_{t}-\ell_{t-1})\\
+         &= \ell_{t-1}+\alpha e_{t},
+\end{align*}
+$$
+
+- Donde $e_{t}=y_{t}-\ell_{t-1}=y_{t}-\hat{y}_{t|t-1}$ es el residuo en $t$ $e_t = \varepsilon_t\sim\text{NID}(0,\sigma^2)$
+
+### ETS(M,N,N): suavizamiento exponencial simple con errores multiplicativos
+
+$$
+\varepsilon_t = \frac{y_t-\hat{y}_{t|t-1}}{\hat{y}_{t|t-1}}
+$$
+
+- Donde $e_t = \varepsilon_t\sim\text{NID}(0,\sigma^2)$. Sustituyendo $\hat{y}_{t|t-1}=\ell_{t-1}$ y dado que $y_t = \ell_{t-1}+\ell_{t-1}\varepsilon_t$ y $e_t = y_t - \hat{y}_{t|t-1} = \ell_{t-1}\varepsilon_t$ se puede reescribir en forma de componentes:
+
+$$
+\begin{align*}
+  y_t &=\ell_{t-1}(1+\varepsilon_t)\\
+  \ell_t &=\ell_{t-1}(1+\alpha \varepsilon_t).
+\end{align*}
+$$
+
+## Taxonomía de modelos ETS(error, tendencia, estacionalidad)
+
+#### Aditivos
+
+| Tendencia/Estacionalidad | N (Ninguna) | A (Aditiva) | M (Multiplicativa) |
+|--------------------------|-------------|-------------|--------------------|
+| N (Ninguna)              | (A,N,N)     | (A,N,A)     | (A,N,M)            |
+| A (Aditiva)              | (A,A,N)     | (A,A,A)     | (A,A,M)            |
+| Ad (Aditiva amortiguada) | (A,Ad,N)    | (A,Ad,A)    | (A,Ad,M)           |
+
+#### Multiplicativos
+
+| Tendencia/Estacionalidad | N (Ninguna) | A (Aditiva) | M (Multiplicativa) |
+|--------------------------|-------------|-------------|--------------------|
+| N (Ninguna)              | (M,N,N)     | (M,N,A)     | (M,N,M)            |
+| A (Aditiva)              | (M,A,N)     | (M,A,A)     | (M,A,M)            |
+| Ad (Aditiva amortiguada) | (M,Ad,N)    | (M,Ad,A)    | (M,Ad,M)           |
+
+## Taxonomía ETS con errores aditivos o multiplicativos
+
+![Taxonomía modelos ETS. Tomado de Hyndman et al.](https://otexts.com/fpp3/figs/statespacemodels-1.png){width="150%"}
+
+## Estimación y selección del modelo
+
+### Estimación ETS
+
+::: {.callout-important}
+La verosimilitud es la probabilidad de que los datos se generen a partir del modelo especificado. Por lo tanto, una verosimilitud alta se asocia con un buen modelo. 
+:::
+
+- Para un modelo de error aditivo, maximizar la verosimilitud (suponiendo errores distribuidos normalmente) produce los mismos resultados que minimizar la suma de errores cuadráticos. 
+- Los parámetros de suavizamiento α, β, γ y ϕ, así como los estados iniciales ℓ₀, b₀, s₀, s₋₁, …, s₋ₘ₊₁, **son aquellos que maximización de la verosimilitud**.
+
+### Selección del modelo
+
+- Dado que el ETS se estima por verosimilitud, se puede estimar los estadísticos de criterios de información para comparar modelos. 
+
+- Criterio de información de Akaike
+$\text{AIC} = -2\log(L) + 2k$
+- Criterio de información de Akaike corregido
+$\text{AIC}_{\text{c}} = \text{AIC} + \frac{2k(k+1)}{T-k-1}$
+- Criterio de información Bayesiano
+$\text{BIC} = \text{AIC} + k[\log(T)-2].$
+
+## Nota estabilidad de los modelos ETS
+
+::: {.callout-warning}
+- Los modelos con errores multiplicativos son útiles cuando los datos son estrictamente positivos, pero no son numéricamente estables cuando los datos contienen ceros o valores negativos. 
+- Por lo tanto, los modelos de error multiplicativo no se considerarán si la serie temporal no es estrictamente positiva. En ese caso, solo se aplicarán los seis modelos completamente aditivos.
+:::
+
+## Pronóstico con ETS
+
+- El pronóstico puntual se obtiene iterando para $t = 1, 2, \dots T + h$ y $\varepsilon_t = 0 \space \forall \space t > T$
+- Para un ETS(M, A, N) en $T + 1$:
+$$
+y_{T+1} = (\ell_T + b_T )(1+ \varepsilon_{T+1}) \\
+\hat{y}_{T+1|T}=\ell_{T}+b_{T}.
+$$
+
+- Para un ETS(M, A, N) en $T + 2$:
+
+$$
+\begin{align*}
+y_{T+2} &= (\ell_{T+1} + b_{T+1})(1 + \varepsilon_{T+2})\\
+        &= \left[
+              (\ell_T + b_T) (1+ \alpha\varepsilon_{T+1}) +
+              b_T + \beta (\ell_T + b_T)\varepsilon_{T+1}
+            \right]
+   (1 + \varepsilon_{T+2}) \\
+   &= \hat{y}_{T+2|T}= \ell_{T}+2b_{T}
+\end{align*}
+$$
+
+### Intervalo de la predicción puntual
+
+- Los intervalos de predicción diferirán entre los modelos que utilizan métodos aditivos y multiplicativos.
+
+$$
+\hat{y}_{T+h|T} \pm c \sigma_h
+$$
+
+- Donde $c$ depende de la probabilidad de cobertura y $\sigma_h$ es la varianza del pronóstico.
+
+::: {.callout-warning}
+- No existe una única varianza para esta familia de modelos. Cada modelo tienen su $\sigma_h$. Ver más en [Forecast variance expressions](https://otexts.com/fpp3/ets-forecasting.html)
+:::
+
+## Regresión armónica dinámica (estacionalidad de largo plazo)
+
+- Jean-Baptiste Fourier fue un matemático francés, nacido en el siglo XVIII, quien demostró que una serie de términos seno y coseno con las frecuencias adecuadas puede aproximar cualquier función periódica. 
+- **Podemos utilizarlos para representar patrones estacionales.**
+- Cuando existen períodos estacionales largos, a menudo implican múltiples patrones estacionales, por lo que es necesario utilizar un método que gestione este tipo de estacionalidad compleja.
+
+- Si $m$ es el período estacional, entonces los primeros términos de Fourier vienen dados por :
+
+$$
+x_{1,t} = \sin\left(\textstyle\frac{2\pi t}{m}\right),
+x_{2,t} = \cos\left(\textstyle\frac{2\pi t}{m}\right),
+x_{3,t} = \sin\left(\textstyle\frac{4\pi t}{m}\right),
+$$
+
+- Las ventajas de este enfoque son:
+  - Permite estacionalidades de cualquier longitud;
+  - Para datos con más de un período estacional, se pueden incluir términos de Fourier de diferentes frecuencias;
+  - La suavidad del patrón estacional puede controlarse mediante $K$, el número de pares seno y coseno de Fourier
+  - El patrón estacional es más suave para valores menores de $K$;
+  - La dinámica de corto plazo se maneja fácilmente mediante un error ARMA simple.
+
+## ETS vs ARIMA
+
+- No existe una jerarquía donde uno domine al otro. La realidad es una superposición:
+  - **Intersección:** Los modelos de suavizado exponencial lineales son casos particulares de ARIMA.
+  - **Exclusividad ETS:** Los modelos ETS no lineales no tienen un equivalente en el mundo ARIMA.
+  - **Exclusividad ARIMA:** Existen muchos modelos ARIMA (especialmente los estacionarios) que no pueden replicarse mediante ETS.
+
+- Una diferencia fundamental radica en la estabilidad de las series:
+  - **ETS:** Todos los modelos de esta familia **son no estacionarios**.
+  - **ARIMA:** Puede manejar tanto series estacionarias como no estacionarias.
+
+- La elección del modelo no depende de cuál sea "más general", sino de la naturaleza de los datos: 
+  - Si el fenómeno tiene una estructura lineal y estacionaria, ARIMA es preferible; 
+  - Si presenta comportamientos no lineales complejos, ETS es la herramienta adecuada.
+
+### Compara modelos ETS vs ARIMA
+
+- En la práctica comparamos el rendimiento de los modelos para escoger pero **fuera del set de entrenamiento**
+- El AIC es una métrica excelente para comparar modelos que pertenecen a la misma familia. Razón, la función de verosimilitud (likelihood) es distinta en ambas familias y el AIC la usa para su cálculo.
+  - ej. un ARIMA(1,1,1) vs un ARIMA(2,1,0)
+  - ej. ETS(A,N,N) vs ETS(M,A,M)
+  - **NO** ETS(A,N,N) vs ARIMA(1,1,1)
+- Se comparan métricas de error como el RMSE, MAE o MAPE sobre un conjunto de datos de prueba.
+
+## Ejemplos resueltos
+
+- [Ver cuadernos de jupyther en Python/R]()
 
 ## Referencias
 
