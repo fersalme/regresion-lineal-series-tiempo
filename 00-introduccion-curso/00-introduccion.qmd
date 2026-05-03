@@ -88,8 +88,8 @@ title-slide-attributes:
 - Paquetes están listados en los archivos `r-requirements.txt` y `py-requirements.txt` en el repositorio del curso.
 - Se recomienda crear un entorno virtual para instalar los paquetes necesarios si estás en tu pc. Si no usar **colab**.
 - Python : Crea un entorno con :
-    - pip : `python -m venv utb-series-tiempo` y actívalo con `source utb-series-tiempo/bin/activate` (Linux/Mac) o `.\utb-series-tiempo\Scripts\activate` (Windows). Luego, para instalar los paquetes usa  `pip install -r py-requirements.txt` para instalar paquetes desde `py-requirements.txt`.
-    - conda : `conda create --name utb-series-tiempo python=3.13` y actívalo con `conda activate utb-series-tiempo`. Luego, para instalar los paquetes usa  `pip install -r py-requirements.txt` para instalar paquetes desde `py-requirements.txt`.
+    - pip : `python -m venv time-series` y actívalo con `source time-series/bin/activate` (Linux/Mac) o `.\time-series\Scripts\activate` (Windows). Luego, para instalar los paquetes usa  `pip install -r py-requirements.txt` para instalar paquetes desde `py-requirements.txt`.
+    - conda : `conda create --name time-series python=3.13` y actívalo con `conda activate time-series`. Luego, para instalar los paquetes usa  `pip install -r py-requirements.txt` para instalar paquetes desde `py-requirements.txt`.
 - Levantar JupyterLab con `jupyter lab` en la terminal desde el entorno virtual. 
 - R : Usar `install.packages(grep("^#|^\\s*$", readLines("r-requirements.txt"), value = TRUE, invert = TRUE))` para instalar paquetes desde `r-requirements.txt`.
 - Para usar R dentro de JupyterLab ejecuta desde la consola `R -e "IRkernel::installspec()"` después de activar el entorno virtual.

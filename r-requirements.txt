@@ -7,7 +7,6 @@ writexl
 janitor
 
 # paquetes para series de tiempo
-fpp3
 fable
 tsibbledata
 feasts
@@ -15,22 +14,23 @@ tsibble
 ggtime
 fasster
 tsfeatures
-lubridate
 forecast
-timetk
-prophet
 zoo
 xts
 tseries
 moments
 
 # paquetes de machine learning y deep learning
+prophet
 randomForest
 xgboost
 lightgbm
 e1071
 mlr3verse
 tidymodels
+keras
+tensorflow
+torch
 
 # paquetes datos
 wbstats
