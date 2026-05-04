@@ -1,0 +1,270 @@
+---
+title: "Modelos GARCH y Volatilidad"
+author: "Fernando Salcedo Mejía Eco, Ms"
+afi: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
+date: "Febrero 2026"
+format:
+  revealjs:
+    theme: [default, src/theme/style.scss]
+    slide-number: true
+    transition: fade
+    scrollable: true
+    code-fold: true
+    embed-resources: true
+    echo: true
+    logo: src/img/logo_utb.png
+    footer: "UTB-ETD | Programa de Ciencia de Datos"
+title-slide-attributes:
+    data-background-image: src/img/plantilla-inicio.png
+    data-background-opacity: "0.6"
+---
+
+# Introducción
+
+- Un supuesto fundamental del modelo de regresión lineal clásico es la homocedasticidad, lo que significa que la varianza del término de error es constante. Sin embargo, en los datos financieros, a menudo observamos una varianza variable en el tiempo (heterocedasticidad). Aquí es donde entra en juego un modelo GARCH (Heterocedasticidad Condicional Autorregresiva Generalizada).
+
+- En esta unidad, se introduce el modelo **GARCH**, utilizado para modelar la volatilidad de series temporales, especialmente en el análisis de datos financieros.
+
+## Caracteristicas de las series financieras
+
+McNeil et al. (2005) enumeran hechos estilizados sobre las series temporales financieras:
+
+1.  Las series de rendimientos financieros no son independientes ni idénticamente distribuidas, aunque muestran **poca autocorrelación**.
+2.  Las series de rendimientos absolutos o al cuadrado muestran una autocorrelación significativa.
+3.  Los rendimientos esperados condicionales son cercanos a cero.
+4.  **La volatilidad parece variar con el tiempo.**
+5.  Las series de rendimientos presentan leptocurtosis o colas pesadas.
+6.  Los rendimientos extremos aparecen agrupados.
+
+::: {.callout-note}
+- La fórmula para calcular los retornos diarios de una acción es: $(p_t - t_{t-1}) / p_{t-1}$ * 100
+- Esta fórmula tiene en cuenta la diferencia entre el precio actual y el precio anterior de la acción, dividido por el precio anterior, y luego multiplicado por 100 para obtener el cambio porcentual.
+:::
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import title
+import yfinance as yf
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from scipy import stats
+
+# Descargar datos de la serie de tiempo
+df = yf.download('AAPL', start='2010-01-01', end='2024-12-31', progress=False)
+precios = df['Close'].copy()
+precios.index = pd.to_datetime(precios.index)
+
+retornos = precios.pct_change().dropna()
+
+# Gráfico de retornos
+fig, axes = plt.subplots(2, 2, figsize=(15, 6))
+axes[0, 0].plot(retornos.index, retornos, label='Retornos AAPL', color='steelblue')
+axes[0, 0].set_title('Retornos Diarios AAPL')
+axes[0, 0].set_ylabel('%')
+axes[0, 0].legend()
+
+plot_acf(retornos, lags=36, ax=axes[0, 1], title='Autocorrelación (ACF) de Retornos')
+plot_acf(retornos**2, lags=36, ax=axes[1, 0], title='Autocorrelación (ACF) de Retornos al cuadrado')
+
+stats.probplot(retornos.values.flatten(), dist="norm", plot=axes[1, 1])
+axes[1, 1].set_title("Q-Q Plot valores Retornos")
+plt.tight_layout()
+plt.show()
+
+# Cálculo de estadísticas descriptivas
+promedio_diario = retornos["AAPL"].mean()
+volatilidad_diaria = retornos["AAPL"].std()
+skewness = retornos["AAPL"].skew()
+kurtosis_exceso = retornos["AAPL"].kurtosis()
+cv_retornos = volatilidad_diaria / promedio_diario
+
+# Anualización (asumiendo 252 días hábiles)
+promedio_anual = promedio_diario * 252
+volatilidad_anual = volatilidad_diaria * np.sqrt(252)
+
+print("=" * 30)
+print(f"ESTADÍSTICAS DE RETORNOS (AAPL)")
+print("=" * 30)
+print(f"Promedio aritmético diario : {promedio_diario:.6f}")
+print(f"Promedio anualizado        : {promedio_anual:.2%}")
+print(f"Volatilidad diaria (Std)   : {volatilidad_diaria:.6f}")
+print(f"Volatilidad anualizada     : {volatilidad_anual:.2%}")
+print(f"Coeficiente de variación : {cv_retornos:.4f}")
+print("-" * 30)
+print(f"Asimetría (Skewness)       : {skewness:.4f}")
+print(f"Curtosis en exceso         : {kurtosis_exceso:.4f}")
+print("=" * 30)
+
+# Verificación rápida de normalidad (Jarque-Bera)
+jb_stat, jb_p_value = stats.jarque_bera(retornos)
+print(f"Prueba Jarque-Bera p-valor : {jb_p_value:.6e}")
+```
+## Introducción a la heterocedasticidad condicional
+
+- Hasta el modelo, hemos trabajado con modelos como ARIMA que supone que sus residuos como $\varepsilon_t \sim WN(0, \sigma^2)$
+- Denotamos esta distribución de residuos como **incondicional**
+- Sin embargo, se sabe que las series de precios, financieros, gestión de riesgos, portafolios, etc tienen una alta **variabilidad en sus datos**.
+- Por lo tanto nos interesan especialmente las dinámicas condicionales caracterizadas por **heterocedasticidad o volatilidad** variable en el tiempo.
+
+::: {.callout-note}
+La volatilidad es un concepto importante para la inversión, la valoración de valores, la gestión de riesgos y la formulación de políticas monetarias. Cuando se interpreta como incertidumbre, se convierte en un elemento clave para muchas decisiones de inversión y la creación de carteras.
+:::
+
+### Definición de volatilidad
+
+- Definamos a $Y_t$ como una serie de tiempo estocastica y $F_t = {Y_1, Y_2, \dots, Y_t}$ como todos los valores pasado de la serie. Entonces $Y_t | F_t$ es constante (no estocastico). Si la serie es estacionaria, el valor $\mu = E(Y_t)$ y la varianza es:
+
+$$
+\sigma\^2 = E(Y_t - \mu)^2 = E(Y_t^{2}) - \mu^2
+$$
+
+- Definimos la volatilidad como la desviación estándar condicional de la serie temporal, condicionada a su historial. Por lo tanto, la volatilidad al cuadrado es la varianza condicional, dada por :
+
+$$
+sigma\^2 = \sigma^2_{t+1 | t} = E[(Y_{t+1} - \mu)^2 | F_t]
+$$
+
+## El proceso ARCH
+
+- El *AutoRegressive Conditional Hetereskedasticity* o ARCH creado por Engle (1982) es un método para análizar series de tiempo volatiles.
+
+- Definimos a $y_t$ como una serie de tiempo y $\sigma_t$ como la volatilidad y $\varepsilon_t \sim WN(0, 1)$ ruido. El modelo ARCH(1) se escribe como :
+
+$$
+y_t = \sigma_t \varepsilon_t \\
+\sigma_t^2 = \omega + \alpha_1 y_{t-1}^2 \\
+\omega > 0, \alpha_1 \geq 0
+$$
+
+- Como puede observarse, la volatilidad condicional al cuadrado depende de las observaciones anteriores al cuadrado.
+- Esto significa que si obtenemos un rendimiento elevado, ya sea positivo o negativo, la varianza condicional será elevada en el siguiente momento temporal.
+
+### Momentos y estacionariedad
+
+- Consideremos que tenemos una serie estacionaria [\\(y_t\\)]{.math .inline} por lo que su valor esperado o promedio sería:
+
+$$
+\mu = E(y_t) = E(\sigma_t \varepsilon_t) = E(\sigma_t) \times E(\varepsilon_t) = 0
+$$
+
+- En el caso de la varianza tenemos : $Var(y_t) = E(y_t - \mu)^2 = E(y_t^2) = E(\sigma_t^2 \varepsilon_t^2) = E(\sigma_t^2) \times E(\varepsilon_t^2) = \sigma\^2$
+
+## ARCH(p)
+
+- Incluyendo más rezagos volvemos la volatilidad más persistente en el tiempo debido que la volatilidad anterior aún está presente en el dato actual pero con menor peso.
+
+$$
+y_t = \sigma_t \varepsilon_t \\
+\sigma_t^2 = \omega + \alpha_1 y_{t-1}^2 + \alpha_2 y_{t-2}^2 + \dots + \alpha_p y_{t-r}^2 \\ \sigma_t^2 = \omega + \sum\_{j=1}^{p} \alpha_j y_{t-j}^2
+$$
+
+- Donde $\omega > 0, \alpha_j \geq 0, j = 1, \dots, p$
+
+## Modelos GARCH
+
+- El modelo de heterocedasticidad condicional autorregresiva generalizada (GARCH) de Bollerslev (1986) y sus numerosas extensiones posteriores constituyen un marco para modelar la dinámica de la varianza condicional.
+- Es muy usado por profesionales de finanzas, pero también en otros ámbitos donde nueva de información o valores inesperados puede provocar variaciones **persistentes** en el tiempo.
+- El modelo GARCH describe la varianza del término de error actual como siguiendo un **proceso ARMA**, en lugar de ser constante.
+- En un modelo GARCH(p,q), los órdenes $p$ y $q$ definen la estructura de la memoria de la volatilidad. Cada uno representa una fuente de información distinta que el modelo utiliza para predecir la varianza actual.
+  - El parámetro p (ARCH): Representa el número de residuos al cuadrado ($y_{t-i}^2$) pasados que se incluyen en la ecuación. Mide el impacto de los choques o noticias recientes.
+  - El parámetro q (GARCH) : Representa el número de varianzas condicionales ($\sigma_{t-j}^2$) pasadas que se incluyen en la ecuación. Mide la persistencia de la volatilidad (memoria de largo plazo).
+- Definimos al modelo GARCH(p,q) así:
+
+$$
+y_t = \sigma_t \varepsilon_t \\
+\sigma_t^2 = \omega + \sum_{i=1}^{p} \alpha_i y_{t-i}^2 + \sum_{j=1}^{q} \beta_j \sigma_{t-j}^2 \\
+\omega > 0, \alpha_i \geq 0, i = 1, \dots, p, \beta_j \geq 0, j = 1, \dots, q
+$$
+
+## GARCH(1, 1)
+
+- Es uno de los modelo más utilizado en finanzas porque con solo dos parámetros captura la esencia del mercado: 
+$$
+\begin{align*}
+\text{Ecuación del proceso (media)} && y_t = \sigma_t \varepsilon_t \\
+\text{Ecuación de la varianza condicional} && \sigma_t^2 = \omega + \alpha_1 y_{t-1}^2 + \beta_1 \sigma_{t-1}^2 
+\end{align*}
+$$
+
+- Explicación del varianza condicional. 
+$$
+\sigma_t^2 = \omega + \underbrace{\alpha_1 y_{t-1}^2}_{\text{Reacción a noticias}} + \underbrace{\beta_1 \sigma\_{t-1}^2}_{\text{Persistencia}}
+$$
+
+- $\alpha$ : Qué tan rápido reacciona el mercado a información nueva.
+
+- $\beta$ : Qué tan persistente es el efecto de esa información.
+
+- $\alpha + \beta < 1$
+
+## Verificar si nuestra serie tiene varianza condicional
+
+- Si es una serie precios/finanzas realizar los análisis de la serie financieras sobre sus **retornos** `retornos = 100 * serie.pct_change().dropna()`
+- Verificar la distribución de los retornos. **Distribuciones con colas pesadas** y mucha variabilidad.
+- Estimar la volatilidad de la serie. Un buen estimador es la **desviación estándar aplicada en una ventana móvil**. `varianza_movil = pd.Series(serie).rolling(ventana).std()`. Si detectamos picos o clúster es un indicicio de heterocedasticidad.
+- Aplicar el Ljung-Box sobre la serie al cuadrado. Esto permite saber si la varianza tiene correlación con sus rezagos.
+- Realizar el test formal de **ARCH LM-test**. El test prueba si los parámetros $\alpha_1, \alpha_2, \ldots, \alpha_j$ de la regresión:
+
+$$
+e^2_t = \alpha_0 + \alpha_1 e^2_{t-1} + \alpha_2 e^2_{t-2} + \ldots + \alpha_j e^2_{t-j} + \epsilon_t
+$$
+
+son conjuntamente significativos mediante un estadístico multiplicador de Lagrange (LM), con hipótesis nula $\alpha_1, \alpha_2, \ldots, \alpha_j = 0$ e hipótesis alternativa al menos algún término es distinto de cero.
+
+## Flujograma detección ARCH/GARCH
+
+```{raw}
+Serie de tiempo en retornos
+      ↓
+Inspección visual de std móvil
+      ├── Plana → Varianza constante (no necesita ARCH/GARCH)
+      └── Picos → Confirmar con tests
+                          ↓
+                  Ljung-Box sobre y²
+                          ├── p ≥ 0.05 → Varianza constante
+                          └── p < 0.05 → Test ARCH
+                                                ↓
+                                        ├── p ≥ 0.05 → Varianza constante
+                                        └── p < 0.05 → Usar ARCH/GARCH
+```
+
+## Familia de modelos ARCH
+
+- Los modelos ARCH son una clase popular de modelos de volatilidad que utilizan valores observados de rendimientos o residuos como choques de volatilidad. Un modelo GARCH básico se especifica como :
+
+$$
+\begin{eqnarray}
+r_t & = & \mu + \epsilon_t \\
+\epsilon_t & = & \sigma_t e_t \\
+\sigma^2_t & = & \omega + \alpha \epsilon_{t-1}^2 + \beta \sigma^2_{t-1} \\
+e_t &\sim & D(.)
+\end{eqnarray}
+$$
+
+Un modelo ARCH completo se divide en tres componentes:
+
+- Un modelo de media, por ejemplo, una media constante
+- Un proceso de volatilidad
+- Una distribución para los residuos estandarizados.
+- La combinación de estos componentes generan distintos modelos. Por ejemplo el modelo GARHC(1, 1) es un modelo con $\mu$ constante y distribución de los residuos normales.
+
+## Modelo GJR-GARCH
+
+- 
+
+
+
+## 
+
+
+## Ejemplos resueltos
+
+- [Ver cuadernos de jupyther en Python/R]()
+
+## Referencias
+
+- Engle, R. F. (1982). Autoregressive conditional heteroscedasticity with estimates of the variance of United Kingdom inflation. Econometrica: Journal of the econometric society, 987-1007.
+- Bollerslev, Tim. "Reprint of: Generalized Autoregressive Conditional Heteroskedasticity." Journal of Econometrics, vol. 234, March 2023, pp. 25--37, https://doi.org/10.1016/j.jeconom.2023.02.001.
+- Diebold, Francis (2017). Forecasting in Economics, Business, Finance and Beyond. University of Pennsylvania
+- Hyndman, R. J., & Athanasopoulos, G. (2021). *Forecasting: Principles and Practice*. 3rd ed. OTexts. Available at: https://otexts.com/fpp3/
