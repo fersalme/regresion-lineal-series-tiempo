@@ -1,0 +1,43 @@
+---
+title: " Modelos de Intervención y Detección de Valores Atípicos"
+author: "Fernando Salcedo Mejía Eco, Ms"
+afi: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
+date: "Febrero 2026"
+format:
+  revealjs:
+    theme: [default, src/theme/style.scss]
+    slide-number: true
+    transition: fade
+    scrollable: true
+    code-fold: true
+    embed-resources: true
+    echo: true
+    logo: src/img/logo_utb.png
+    footer: "UTB-ETD | Programa de Ciencia de Datos"
+title-slide-attributes:
+    data-background-image: src/img/plantilla-inicio.png
+    data-background-opacity: "0.6"
+---
+
+# Introducción
+
+En esta unidad, se exploran los modelos de intervención y cómo detectar y manejar valores atípicos en las series temporales. Se analiza la importancia de detectar estos valores para mejorar la calidad de los modelos y las predicciones.
+
+- Modelos de intervención: definición y aplicaciones
+- Tipos de valores atípicos: aditivos, innovadores y multiplicativos
+- Técnicas para la detección y corrección de valores atípicos
+- Ejemplos de análisis de intervención y manejo de valores atípico
+
+# Modelos de intervención: definición y aplicaciones
+
+## Modelos de intervención
+
+- 
+
+## Ejemplos resueltos
+
+- [Ver cuadernos de jupyther en Python/R]()
+
+## Referencias
+
+- Hyndman, R. J., & Athanasopoulos, G. (2021). *Forecasting: Principles and Practice*. 3rd ed. OTexts. Available at: https://otexts.com/fpp3/
