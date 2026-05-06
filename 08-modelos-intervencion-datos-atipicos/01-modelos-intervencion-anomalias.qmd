@@ -63,23 +63,75 @@ axs[1].set_title("Cambio de tendencia")
 plt.show()
 ```
 
-## Serie temporal interrumpida
+## Serie temporal interrumpida (ITR)
 
 - Está formado por dos períodos de múltiples observaciones registradas, antes y después de la intervención. Se trata de comprobar, si a partir del punto de intervención se ha **producido un cambio en el patrón de los datos.**
 
 - Por lo general, se espera encontrar que la pendiente o el nivel de la serie sea contingente a la aplicación de la intervención. Este diseño recibe el nombre de serie temporal interrumpida, porque la inferencia causal se basa en detectar o descubrir un cambio abrupto en los valores de la variable dependiente.
 
-![](src/img/itr.png)
-
 $$
-Y_t = \beta_0 + \beta_1 t + \beta_2 D_t + \beta_3 \left[t - T_I \right] D_t+ \varepsilon_t
+Y_t = \beta_0 + \beta_1 t + \beta_2 D_t + \beta_3 \left[t - T_I \right] D_t + \eta_t
 $$
 
 Donde :
 
 - ${Y}_{t}$ es la serie de tiempo
 - $D_t$ es una variable indicadora que representa el intervalo posterior a la interrupción: codificada como 0 en el período anterior a la interrupción y como 1 en el período posterior a la interrupción.
-- 
+- $T_I$ es el momento en el timpo de la intervención.
+- $\left[t - T_I \right] D_t$ representa el cambio de pendiente, igual a cero hasta el momento de la intervención y despúes incrementa $1, 2, \dots, N$.
+- Los parámetros del modelo representan la intersección de referencia ($\beta_0$); la pendiente previa a la interrupción ($\beta_1$); el cambio de nivel en la interrupción ($\beta_2$), y el cambio de pendiente ($\beta_3$).
+- $\eta_t$  sigue un proceso de autocorrelación.
+
+## Serie temporal interrumpida
+
+![](src/img/itr.png){width="150%"}
+
+Tomado de Turner (2021).
+
+## Modelos usandos en ITR.
+
+- Siendo una serie de tiempo, sabes que $\eta_t$  sigue un proceso de autocorrelación. Básicamente se usa dos métodos para estimar el modelo :
+
+- Modelo ARIMA(p, d, q) donde sus residuos $\varepsilon_t \sim WN$
+- Mínimos Cuadrados Ordinarios (OLS) con errores estándar de Newey-West
+
+## Modelo ITR-ARIMA
+
+- Usamos el modelo ARIMA(p, d, q) para modelar la autocorrelación de los residuales del modelo ITR $\eta_t$
+
+$$
+Y_t = \beta_0 + \beta_1 t + \beta_2 D_t + \beta_3 \left[t - T_I \right] D_t + \eta_t \\
+(1-\phi_1B)(1-B)\eta_t = (1+\theta_1B)\varepsilon_t \\
+\varepsilon_t \sim WN
+$$
+
+## Modelo OLS-Newey-West ITR
+
+- El estimador de Newey-West (también conocido como HAC: _Heteroskedasticity and Autocorrelation Consistent_) recalcula la matriz de varianza-covarianza epara que los errores estándar sean robustos ante la presencia de autocorrelación y heterocedasticidad sin cambiar los coeficientes $\beta$ calculados por OLS.
+
+- Matriz de Varianza-Covarianza General
+$$
+\hat{\Sigma}_{HAC} = (X^T X)^{-1} \hat{\Omega} (X^T X)^{-1}
+$$
+
+- Estimador Omega ($\hat{\Omega}$)
+$$
+\hat{\Omega} = \sum_{t=1}^{T} e_t^2 x_t x_t^T + \sum_{j=1}^{L} w_j \sum_{t=j+1}^{T} e_t e_{t-j} (x_t x_{t-j}^T + x_{t-j} x_t^T)
+$$
+
+Esta parte se le conoce como el estimador de **heterocedasticidad de White** ($\sum_{t=1}^{T} e_t^2 x_t x_t^T$)
+
+- Pesos de Bartlett : Esto significa que los rezagos más cercanos tienen más peso que los rezagos más lejanos en el cálculo del error.
+
+$$
+w_j = 1 - \frac{j}{L + 1}
+$$
+
+- Heterocedasticidad: Ajusta si la varianza de los errores no es constante
+- Autocorrelación: Ajusta si el error de hoy depende del error de ayer. Requiere definir un lag (rezago) máximo hasta el cual se sospecha que existe correlación.
+
+## Estimadores avanzados 
+
 
 ## Ejemplos resueltos
 
