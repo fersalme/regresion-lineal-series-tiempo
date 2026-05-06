@@ -130,8 +130,78 @@ $$
 - Heterocedasticidad: Ajusta si la varianza de los errores no es constante
 - Autocorrelación: Ajusta si el error de hoy depende del error de ayer. Requiere definir un lag (rezago) máximo hasta el cual se sospecha que existe correlación.
 
-## Estimadores avanzados 
+## Sesgos de los estimadores ITR :
 
+**Amenazas a la validez interna :** 
+
+- La principal amenaza a la validez interna o validez de inferencia es, el factor **historia**. La historia se refiere a hechos o **acontecimientos externos** distintos al tratamiento que actúan en el punto de intervención y que pueden afectar a la conducta en curso.
+- Otra amenaza son :
+  - **Selección**. Cambios en la definición de la serie despúes de la intervención.
+  - **Instrumentación**. Un cambio en los procedimientos administrativos puede modificar la forma como los registros son guardados.
+
+## Serie temporal interrumpida (ITR) con grupo de control no equivalente.
+
+- El diseño de serie temporal interrumpida con grupo control no equivalente es una extensión del diseño de serie temporal simple y permite investigar hipótesis más precisas al comparar una serie temporal experimental con otra de control. En consecuencia, se controlan mejor las posibles hipótesis rivales.
+
+- **Supuestos :**
+- Suponemos que los grupos de tratamiento y control evolucionan de forma similar a lo largo del tiempo.
+- Podemos estimar fácilmente la pendiente del grupo de control desde antes hasta después del tratamiento.
+- Podemos realizar un **análisis contrafactual** y preguntarnos: ¿Cuál sería el resultado posterior al tratamiento del grupo de tratamiento si no lo hubieran recibido?.
+
+## Estimador Diferencias en Diferencias (o Diff-in-Diff / DiD)
+
+- El modelo de DiD es una técnica econométrica diseñada para estimar efectos causales comparando el cambio en los resultados a lo largo del tiempo entre un grupo que recibe un tratamiento y un grupo de control.
+
+- La idea central es que, en ausencia del tratamiento, la diferencia entre el grupo de tratamiento y el de control se habría mantenido constante. Esto se conoce como el supuesto de tendencias paralelas.
+
+- Para calcularlo estadísticamente (y poder incluir variables de control), se utiliza una regresión lineal con una interacción:
+
+$$
+Y_{t} = \beta_0 + \beta_1 \text{Treatment}_t + \beta_2 \text{Post}_t + \beta_3 (\text{Treatment}_t \cdot \text{Post}_t) + \varepsilon_{t}
+$$
+
+Donde :
+
+- $\beta_0$: Intercepto (valor base del grupo de control en el periodo pre-intervención).
+- $\text{Treatment}_i$: Variable binaria (1 si pertenece al grupo tratado, 0 si es control).
+- $\text{Post}_t$: Variable binaria (1 si es el periodo después de la intervención, 0 si es antes).
+- $\beta_3$: El estimador de **Diferencia en Diferencias** (el efecto causal bajo supuestos!).
+
+## Estimador Diferencias en Diferencias (o Diff-in-Diff / DiD)
+
+
+
+![](src/img/did.png)
+
+## Estimadores avanzados : Modelos de Espacio de Estados Bayesianos.
+
+- El modelo **construye un contrafactual**; es decir, predice qué habría pasado con la serie temporal si la intervención nunca hubiera ocurrido. Para ello usa un enfoque bayesiano usando **modelos de espacio de estados** y cadenas de Markov basadas en probabilidad  para la inferencia a posteriori de la intervención.
+
+- Por ejemplo, **¿cuántos clics diarios adicionales generó una campaña publicitaria?** Responder a una pregunta como esta puede resultar difícil cuando no se dispone de un experimento aleatorio.
+
+**Para ello necesita :**
+
+**Grupo de control sintético:** Utiliza otras series temporales que no fueron afectadas por la intervención (predictores) para ayudar a predecir la evolución de la variable objetivo.
+
+**Comparación:** El efecto causal es la diferencia acumulada entre lo que realmente se observó y lo que el modelo predijo (el contrafactual).
+
+**Efecto puntual:**
+$$
+\tau_t = y_t - \hat{y}_t(0)
+$$
+
+**Efecto acumulado:**
+
+$$
+\Delta = \sum_{t=t_{int}}^{T} (y_t - \hat{y}_t(0))
+$$
+
+Donde : 
+- $\hat{y}_t(0)$: Es la predicción contrafactual (lo que el modelo estima que habría pasado sin intervención).
+
+## Salida del modelo CausalImpact
+
+![](src/img/causalimpact.png){width="150%"}
 
 ## Ejemplos resueltos
 
@@ -141,3 +211,5 @@ $$
 
 - Hyndman, R. J., & Athanasopoulos, G. (2021). *Forecasting: Principles and Practice*. 3rd ed. OTexts. Available at: https://otexts.com/fpp3/
 - Turner, S.L., Karahalios, A., Forbes, A.B. et al. Comparison of six statistical methods for interrupted time series studies: empirical evaluation of 190 published series. BMC Med Res Methodol 21, 134 (2021). https://doi.org/10.1186/s12874-021-01306-w
+- Scott Cunningham. Causal inference: The Mixtape. Yale University Press, 2021.
+- Brodersen KH, Gallusser F, Koehler J, Remy N, Scott SL. Inferring causal impact using Bayesian structural time-series models. Annals of Applied Statistics, 2015, Vol. 9, No. 1, 247-274. http://research.google.com/pubs/pub41854.html
