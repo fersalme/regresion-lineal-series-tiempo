@@ -1,5 +1,5 @@
 ---
-title: " Modelos de Intervención y Detección de Valores Atípicos"
+title: "Modelos de Intervención y Detección de Valores Atípicos"
 author: "Fernando Salcedo Mejía Eco, Ms"
 afi: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
 date: "Febrero 2026"
@@ -202,6 +202,21 @@ Donde :
 ## Salida del modelo CausalImpact
 
 ![](src/img/causalimpact.png){width="150%"}
+
+# Paradigmas de detección de anomalías en series temporales
+
+## Los tres principales paradigmas de detección de anomalías.
+
+- Al analizar datos de series temporales, podemos distinguir tres paradigmas diferentes de detección de anomalías:
+
+- **Tiempos extraños:** Identificación de anomalías dentro de una serie temporal en datos históricos.
+- **Series extrañas:** Identificación de una serie temporal anómala dentro de un conjunto de series temporales.
+- **Vigilancia:** Identificación de anomalías dentro de una serie temporal en tiempo real.
+
+## Estos paradigmas se pueden ilustrar con los siguientes ejemplos.
+
+![](src/img/anomalia.png)
+
 
 ## Ejemplos resueltos
 
