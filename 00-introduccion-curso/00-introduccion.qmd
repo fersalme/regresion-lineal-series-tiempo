@@ -2,7 +2,7 @@
 title: "Modelos de Regresión y Series de Tiempo"
 author: "Fernando Salcedo Mejía Eco, Ms"
 afi: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
-date: "Junio 2024"
+date: "2026-08-01"
 description: "Presentación introductoria sobre modelos de regresión y series de tiempo."
 categories: ["Presentaciones", "Ciencia de Datos", "Modelos de Regresión", "Series de Tiempo"]
 format:
