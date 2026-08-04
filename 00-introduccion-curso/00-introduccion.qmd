@@ -64,15 +64,12 @@ title-slide-attributes:
 * **Hyndman, R.J., Athanasopoulos, G., Garza, A., Challu, C., Mergenthaler, M., & Olivares, K.G. (2025).** Forecasting: Principles and Practice, the Pythonic Way. OTexts: Melbourne, Australia. Available at: OTexts.com/fpppy.
 
 ## Evaluación
-- **Participación en clase y ejercicios prácticos en clases: 30%**
-    - Por cada hora de clase una actividad grupales o individuales.
-- **Exámenes parciales: 40%**
-    - Dos exámenes parciales durante el curso.
-- **Proyecto final integrador: 30%**
-    - Comienza en el tercer cohorte.
-    - Desarrollo de un proyecto final que integre los conceptos aprendidos en el curso.
-    - Presentación y defensa del proyecto en una feria de datos.
-- **Nota cohorte:** $Puntaje final = 0.3 \times Talleres + 0.4 \times Exámenes + 0.3 \times Proyecto\ final$
+- **Ejercicios y talleres prácticos en laboratorios: 40%**
+    - Por semana hay actividad grupales o individuales en el laboratorio.
+- **Quiz: 20%**
+    - Quiz escritos durante el curso.
+- **Parcial del corte: 40%**
+    - Puede ser un exámen o desarrollo de un proyecto en el laboratorio.
 - **Nota final del curso:** Promedio de las notas de los tres cohortes.
 
 ## Políticas del curso
@@ -96,7 +93,7 @@ title-slide-attributes:
 
 ## Información de contacto
 - Microsoft-Teams y correo electrónico : fsalcedo@utb.edu.co
-- Horario de atención a estudiantes: Martes y Jueves de 3:00 PM a 5:00 PM por Microsoft-Teams.
+- Horario de atención a estudiantes: Lunes a Viernes 2 PM - 5PM por Microsoft-Teams.
 
 ## ¡Gracias por su atención!
 
