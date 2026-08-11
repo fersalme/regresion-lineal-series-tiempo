@@ -1,7 +1,7 @@
 ---
 title: "Fundamentos de Regresión y Modelos Estacionarios"
-author: "Fernando Salcedo Mejía Eco, Ms"
-afi: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
+author: "Fernando Salcedo Mejía, Economista, MSc"
+institute: "Escuela de Transformación Digital - ETD | Programa de Ciencia de Datos"
 date: "Febrero 2026"
 format:
   revealjs:
@@ -33,9 +33,18 @@ series temporales.
 - Análisis de la autocorrelación y parcial autocorrelación en series temporales
 - Modelos autoregresivos (AR) y medias móviles (MA)
 
+## Objetivos de aprendizaje
+
+Al finalizar esta unidad, el estudiante será capaz de :
+
+- Estimar e interpretar los coeficientes de un modelo de regresión lineal aplicado a series de tiempo mediante Mínimos Cuadrados Ordinarios (MCO).
+- Verificar los supuestos del modelo de regresión lineal (linealidad, homocedasticidad, no autocorrelación, exogeneidad) y diagnosticar su cumplimiento a partir de los residuos.
+- Construir predictores temporales (tendencia, variables dummy, series de Fourier) para capturar patrones estacionales.
+- Generar pronósticos con sus respectivos intervalos de confianza y evaluar su precisión con métricas como AIC, BIC, RMSE, MAE, MAPE y MASE.
+
 ## Regresión lineal en series de tiempo
 
-::: {.callout-tip title = "Concepto clave"}
+::: {.callout-tip title="Concepto clave"}
 Podemos aplicar el concepto de regresión para pronosticar una variable $y_t$ asumiendo que tiene una relación esperada con otra en el tiempo $x_t$.
 :::
 
@@ -48,6 +57,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
+np.random.seed(42)
 x = np.random.normal(50, 10, 100)
 y = np.random.normal(2, 10, 100) + 2 * x + np.random.normal(0, 1, 100)
 X = sm.add_constant(x)
@@ -56,8 +66,8 @@ y_hat = lm.predict()
 
 plt.style.use('ggplot')
 fig, ax = plt.subplots()
-ax.scatter(y, x, color = "gray")
-ax.plot(y_hat, x, color = "red")
+ax.scatter(x, y, color = "gray")
+ax.plot(x, y_hat, color = "red")
 plt.title('Regresión lineal')
 plt.xlabel('X')
 plt.ylabel('Y')
@@ -156,24 +166,24 @@ $$
 - Expandiendo los términos tenemos :
 $$
 \mathbf{\varepsilon}'\mathbf{\varepsilon} = \mathbf{y}'\mathbf{y} - \mathbf{\beta}'\mathbf{X}'\mathbf{y} - \mathbf{y}'\mathbf{X}\mathbf{\beta} + \mathbf{\beta}'\mathbf{X}'\mathbf{X}\mathbf{\beta} \\
-\mathbf{\varepsilon}'\mathbf{\varepsilon} = \mathbf{\varepsilon}'\mathbf{\varepsilon}  - 2\mathbf{y}'\mathbf{X}\mathbf{\beta} + \mathbf{\beta}'\mathbf{X}'\mathbf{X}\mathbf{\beta}
+\mathbf{\varepsilon}'\mathbf{\varepsilon} = \mathbf{y}'\mathbf{y}  - 2\mathbf{y}'\mathbf{X}\mathbf{\beta} + \mathbf{\beta}'\mathbf{X}'\mathbf{X}\mathbf{\beta}
 $$
 
 - Minimizando la expresión tenemos :
 $$
-\frac{\partial \mathbf{\varepsilon}'\mathbf{\varepsilon}}{\partial \beta} = -2\mathbf{y}'\mathbf{X} + 2\mathbf{X}'\mathbf{X}\mathbf{\beta}  = 0 \\
+\frac{\partial \mathbf{\varepsilon}'\mathbf{\varepsilon}}{\partial \beta} = -2\mathbf{X}'\mathbf{y} + 2\mathbf{X}'\mathbf{X}\mathbf{\beta}  = 0 \\
 $$
 
  - Resolviendo para $\beta$
 $$
-2\mathbf{X}'\mathbf{X}\mathbf{\beta} = 2\mathbf{y}'\mathbf{X} \\
+2\mathbf{X}'\mathbf{X}\mathbf{\beta} = 2\mathbf{X}'\mathbf{y} \\
 \text{Sistema de ecuaciones normales} :
-\mathbf{X}'\mathbf{X} ^ {-1} \mathbf{X}'\mathbf{X}\mathbf{\beta} = \mathbf{X}'\mathbf{X} ^ {-1} \mathbf{y}'\mathbf{X}
+(\mathbf{X}'\mathbf{X})^{-1} \mathbf{X}'\mathbf{X}\mathbf{\beta} = (\mathbf{X}'\mathbf{X})^{-1} \mathbf{X}'\mathbf{y}
 $$
 
-- Finalmente, **tenemos que el estimador _MCO_ es :** 
+- Finalmente, **tenemos que el estimador _MCO_ es :**
 $$
-\mathbf{\hat{\beta}} = \mathbf{X}'\mathbf{X} ^ {-1} \mathbf{y}'\mathbf{X}
+\mathbf{\hat{\beta}} = (\mathbf{X}'\mathbf{X})^{-1} \mathbf{X}'\mathbf{y}
 $$
 
 ::: {.callout-note title="Nota"}
@@ -202,7 +212,7 @@ $$
 ## Supuestos del modelo lineal
 
 - Las observaciones provienen de una muestra aleatoria de una población
-- **Independecia** : $Y_i, .. Y_n$ son independientes
+- **Independencia** : $Y_i, .. Y_n$ son independientes
 - **Linealidad** : El modelo de regresión es lineal en los parámetros, aunque puede o no ser lineal en las variables. 
   - Lineal
   $$Y = \beta_0 + \beta_1 \log X$$
@@ -218,7 +228,7 @@ $$
 Cov(\varepsilon_i, \varepsilon_j) = 0
 $$
 - **Exogeneidad** : Valores de X independientes del término de error $Cov(\varepsilon_i, \mathbf{X}) = 0$
-- **Colinealiad perfecta** : no existe correlación perfecta entre las regresoras incluidas en el modelo de regresión $X_1 = 2X_2$
+- **Colinealidad perfecta** : no existe correlación perfecta entre las regresoras incluidas en el modelo de regresión $X_1 = 2X_2$
 - **Rango completo** : El número de observaciones n debe ser mayor que el número de parámetros por estimar $N > X_k$
 
 ## Propiedades del estimador MCO
@@ -232,12 +242,12 @@ $$
 
 - **Tienen varianza mínima**. En combinación con 1, esto significa que son estimadores insesgados con varianza mínima, o eficientes.
 $$
-Var(\hat{\beta_0}) = \frac{\sum X^2_i}{n\sum(X_i - \overline{X})^2}, Var(\hat{\beta_1}) = \frac{\sigma^2}{\sum(X_i - \overline{X})^2}
+Var(\hat{\beta_0}) = \sigma^2\frac{\sum X^2_i}{n\sum(X_i - \overline{X})^2}, Var(\hat{\beta_1}) = \frac{\sigma^2}{\sum(X_i - \overline{X})^2}
 $$
 
 - **Presentan consistencia**; es decir, a medida que el tamaño de la muestra aumenta indefinidamente, los estimadores convergen hacia sus verdaderos valores.
 
-## Ejercicio 1. Gráficar la convergencia de los parámetros estimados por MCO a sus verdaderos valores.
+## Ejercicio 1. Graficar la convergencia de los parámetros estimados por MCO a sus verdaderos valores.
 
 - Supongamos que los valores de $y$ siguen esta función lineal simple
 $$
@@ -316,14 +326,14 @@ H_a: \beta_j \neq 0
 $$
 
 $$
-t_{1 - \alpha/2; (n - k)} = \frac{\beta_j - \hat{\beta_j}}{\sqrt{Var(\hat{\beta_j})}}
+t_{1 - \alpha/2; (n - k)} = \frac{\hat{\beta_j} - \beta_j}{\sqrt{Var(\hat{\beta_j})}}
 $$
-- **Regla de descisión :** Si $P(t_{1 - \alpha/2; (n - k)}) < 0.05$ consideramos que hay evidencia suficiente contra $H_0$, por lo que se acepta $H_a$.
+- **Regla de decisión :** Si $P(t_{1 - \alpha/2; (n - k)}) < 0.05$ consideramos que hay evidencia suficiente contra $H_0$, por lo que se acepta $H_a$.
 $$
 \text{IC95 \%} =  \hat{\beta_j} \pm t_{1 - \alpha/2; (n - k)} \sqrt{Var(\hat{\beta_j})}
 $$
 
-## Ejemplo 2 : El modelo macroeconómico del crecimiento del consumo en Estados Unidos
+## Ejemplo 1 : El modelo macroeconómico del crecimiento del consumo en Estados Unidos
 
 - Queremos modelar cómo cambia el consumo real (compra de bienes y servicios) de una economía según variables macroeconómicas importantes. El consumo es uno de los componentes más importantes de una economía.
 
@@ -369,6 +379,10 @@ print(ml.summary())
 
 ### Solución con R :
 
+::: {.callout-note}
+Este bloque se muestra como referencia (`eval: false`) y no se ejecuta al renderizar, ya que el motor del documento (`engine: jupyter`) corre la solución en Python. Puedes ejecutarlo de forma independiente en una sesión de R.
+:::
+
 ```{r}
 # | eval: false
 # Cargar librerías necesarias
@@ -377,8 +391,8 @@ library(fable)
 library(tsibble) # 'tsibble' para series de tiempo
 
 # 1. Cargar y preparar datos
-us_change <- read_csv("datos/US_change.csv") %>%
-  mutate(ds = yearquarter(ds)) %>%
+us_change <- read_csv("datos/US_change.csv") |>
+  mutate(ds = yearquarter(ds)) |>
   as_tsibble(index = ds)
 
 # 2. Visualización
@@ -390,7 +404,7 @@ ggplot(us_change, aes(x = ds)) +
 
 # 3. Modelo de Regresión Lineal (MCO)
 # Usamos TSLM (Time Series Linear Model) de la librería 'fable'
-fit <- us_change %>%
+fit <- us_change |>
   model(
     mco = TSLM(y ~ Income + Production + Savings + Unemployment)
   )
@@ -413,7 +427,7 @@ $$
 
 ### Linealidad de los paramentros
 
-- La relación de las variables regresoras deben ser lineales con la variables explicada. Gráficamente, no debemos ver un patron funcional entre los errores y los valores predichos del modelo.
+- La relación de las variables regresoras deben ser lineales con la variables explicada. Gráficamente, no debemos ver un patrón funcional entre los errores y los valores predichos del modelo.
 
 ![](src/img/checking-the-linearity-assumption.png)
 
@@ -427,7 +441,7 @@ $$
 
 ### Residuos del modelo con varianza constante (homocedasticos)
 
-- Los errores del modelo deben distibuirce de forma constante. Gráficamente, no debemos ver un patron entre los errores y los valores predichos del modelo.
+- Los errores del modelo deben distribuirse de forma constante. Gráficamente, no debemos ver un patrón entre los errores y los valores predichos del modelo.
 
 ![](src/img/checking-homoscedasticity-assumption.png)
 
@@ -452,7 +466,7 @@ $$
 
 ![](src/img/acf-trend-sesion.png)
 
-- En cambio, cuando los datos son estacionales, las autocorrelaciones serán mayores para los rezagos estacionale (semanales, trimestrales, anuales, etc) que para otros rezagos.
+- En cambio, cuando los datos son estacionales, las autocorrelaciones serán mayores para los rezagos estacionales (semanales, trimestrales, anuales, etc) que para otros rezagos.
 
 ![](src/img/acf-sesion.png)
 
@@ -469,7 +483,7 @@ d = \frac{\sum_{t=2}^{T} (e_t - e_{t-1})^2}{\sum_{t=1}^{T} e_t^2} \\
 0 \leq d \leq 4
 $$
 
-- Regla de desición
+- Regla de decisión
 - d = 2 indica que no hay autocorrelación
 - d < 2 indica correlación serial positiva
 - d > 2 indica correlación serial negativa
@@ -482,15 +496,15 @@ $$
 Ruido Blanco (White Noise): Una serie donde los datos son totalmente independientes e idénticamente distribuidos. En la ACF, esto se ve como picos que no superan los límites de confianza.
 :::
 
-- H0 : Los residuos no están correlacionados hasta el $\ell$ resagos (**no son** distintos de un proceso ruido blanco)
-- Ha : Al menos uno de los residuos está correlacionado hasta el $\ell$ resago
+- H0 : Los residuos no están correlacionados hasta el $\ell$ rezagos (**no son** distintos de un proceso ruido blanco)
+- Ha : Al menos uno de los residuos está correlacionado hasta el $\ell$ rezago
 
 $$
 Q^* = T(T+2) \sum_{k=1}^\ell (T-k)^{-1}r_k^2. \\
 Q^* \sim \chi ^ 2_{gl = \ell}
 $$
 
-- **Regla de desición :** Si $P(Q^*) > 0.05$ la serie sigue un proceso ruido blanco.
+- **Regla de decisión :** Si $P(Q^*) > 0.05$ la serie sigue un proceso ruido blanco.
 
 #### Soluciones al problema de autocorrelación
 
@@ -509,7 +523,7 @@ $$
 y_{t} = \beta_{0} + \beta_{1} x_t + \beta_{2}d_{2,t} + \beta_3 d_{3,t} + \beta_4 d_{4,t} + \varepsilon_{t}
 $$
 
-## Ejercicio 3 : 
+## Ejercicio 2 :
 
 - Hacer el diagnostico del modelo macroeconómico del crecimiento del consumo en Estados Unidos. ¿Se viola algún supuesto del MCO?
 
@@ -580,14 +594,14 @@ plot_diagnostics(ml, n_lags=20, target_col="Consumption", time_axis=us_change.in
 - Es usual que usemos caracteristicas de la serie temporal en la regresión tales como :
 
 ### Tendencia
-- La tendencia $T$ se puede modelar incluyendola como variable explicativa en el modelo
+- La tendencia $T$ se puede modelar incluyéndola como variable explicativa en el modelo
 $$
 y_{t}= \beta_0+\beta_1t+\varepsilon_t
 $$
 
 ### Variables dummy
 - Las variables dummy que son variables que solo toman valores ${0, 1}$ se utilizan para :
-- Crear variables estacionales en los datos, tal que capturen patrones especificos de esos momentos. Puedes capturar picos específicos (como Navidad o vacaciones de verano) que una tendencia lineal simple ignoraría.
+- Crear variables estacionales en los datos, tal que capturen patrones específicos de esos momentos. Puedes capturar picos específicos (como Navidad o vacaciones de verano) que una tendencia lineal simple ignoraría.
 $$
 y_{t} = \beta_{0} + \beta_{1} t + \beta_{2}d_{2,t} + \beta_3 d_{3,t} + \beta_4 d_{4,t} + \varepsilon_{t}
 $$
@@ -600,11 +614,11 @@ $$
 
 - Son variables dummy pero que marcan eventos estacionales en la serie, tales como días de la semana, meses de un año, trimestres, etc. Es importante, dejar una variable por fuera del modelo por el riesgo de colinealidad perfecta.
 
-- Un problema que podemos enfrentar es cuando la serie tiene una estacional alta como las series semanales, ya que por año son 52 semanas, lo cual termina en 51 variables dummy estacionales. Recordemos que para cada variable el estimador _MCO_ requiere estimar un $\hat{\beta}$ lo cual es más dificil en la medida que incluimos más variables con los mismos datos.
+- Un problema que podemos enfrentar es cuando la serie tiene una estacional alta como las series semanales, ya que por año son 52 semanas, lo cual termina en 51 variables dummy estacionales. Recordemos que para cada variable el estimador _MCO_ requiere estimar un $\hat{\beta}$ lo cual es más difícil en la medida que incluimos más variables con los mismos datos.
 
 ### Series de Fourier 
 
-- Es una alternativa a las dummy estacionales, en especial en series con estacionalidad alta. Jean-Baptiste Fourier un matemático Fránces describió que las funciones seno y coseno pueden usarse para aproximarse a cualquier serie periodica. Aquí vemos las primeras pares de la serie de seno y cosenos para una estacional de una semana :
+- Es una alternativa a las dummy estacionales, en especial en series con estacionalidad alta. Jean-Baptiste Fourier un matemático Francés describió que las funciones seno y coseno pueden usarse para aproximarse a cualquier serie periódica. Aquí vemos las primeras pares de la serie de seno y cosenos para una estacional de una semana :
 
 $$
 x_{1,t} = \sin\left(\textstyle\frac{2\pi t}{m}\right),
@@ -614,28 +628,28 @@ $$
 
 - El máximo de pares de seno y coseno a incluir sería $K=m/2$ donde $m$ es la frecuencia de la estacionalidad de la serie.
 
-## Pronostico con regresión lineal
+## Pronóstico con regresión lineal
 
-- El pronostico del modelo estimado no es más que usar los $\hat{\beta}$ encontrados por _MCO_ sobre una nueva observación de $X$
+- El pronóstico del modelo estimado no es más que usar los $\hat{\beta}$ encontrados por _MCO_ sobre una nueva observación de $X$
 $$
 \hat{y_t} = \hat\beta_{0} + \hat\beta_{1} x_{1,t} + \hat\beta_{2} x_{2,t} + \cdots + \hat\beta_{k} x_{k,t}
 $$
 
-- Además un intervalo de confianza al 95% para le pronostico (asumiendo normalidad en los errores del modelo) se define como :
+- Además un intervalo de confianza al 95% para el pronóstico (asumiendo normalidad en los errores del modelo) se define como :
 $$
 \hat{y} \pm 1.96 \hat{\sigma}_e\sqrt{1+\frac{1}{T}+\frac{(x-\bar{x})^2}{(T-1)s_x^2}}
 $$
 
-::: {.callout-note title="Pronostico ex-antes y ex-post"}
-- **Pronostico ex-antes :** Son aquellos que se realizan únicamente con los datos que están disponibles previamente de los predictores del modelo.
-- **Pronostico ex-post :** Son aquellos que se realizan utilizando información posterior o nueva sobre los predictores del modelo.
+::: {.callout-note title="Pronóstico ex-ante y ex-post"}
+- **Pronóstico ex-ante :** Son aquellos que se realizan únicamente con los datos que están disponibles previamente de los predictores del modelo.
+- **Pronóstico ex-post :** Son aquellos que se realizan utilizando información posterior o nueva sobre los predictores del modelo.
 :::
 
-- Otra forma de hacer pronosticos es con la construcción de escenarios, donde suponemos que las variables de nuestro modelo toman un rango de valores esperados en el futuro. Esto es útil para tomadores de desición si quireren ver valores esperados de la serie bajo supuestos y hacer comparaciones.
+- Otra forma de hacer pronósticos es con la construcción de escenarios, donde suponemos que las variables de nuestro modelo toman un rango de valores esperados en el futuro. Esto es útil para tomadores de decisión si quieren ver valores esperados de la serie bajo supuestos y hacer comparaciones.
 
-## Ejercicio 5:
+## Ejercicio 3:
 
-- Hacer una regresión del consumo con el ingreso en el modelo macroeconómico de Estados Unidos. El ministro de economía del país está interesado en saber cúal será el consumo esperado en el siguiente trimestre en tres escenarios : si el ingreso se matienen en sus valores promedios historicos, se reduce 0.2 puntos porcentuales o aumenta 0.8 puntos porcentuales respecto al promedio historico.
+- Hacer una regresión del consumo con el ingreso en el modelo macroeconómico de Estados Unidos. El ministro de economía del país está interesado en saber cuál será el consumo esperado en el siguiente trimestre en tres escenarios : si el ingreso se mantiene en sus valores promedios históricos, se reduce 0.2 puntos porcentuales o aumenta 0.8 puntos porcentuales respecto al promedio histórico.
 
 $$
 \Delta C_t = \beta_0 + \beta_1 Ingreso_t + \varepsilon_t
@@ -648,7 +662,7 @@ $$
 
 ## Rendimiento y comparación de modelos para la predicción
 
-- Cuando tenemos varios modelos con diferentes covariables **pero con la misma variabla dependiente** podemos usar estadísticos de selección de modelos como :
+- Cuando tenemos varios modelos con diferentes covariables **pero con la misma variable dependiente** podemos usar estadísticos de selección de modelos como :
 
 - $R^2$ ajustado : Permite comparar modelos teniendo en cuenta el número de covariables en el modelo. Entre más alto sea, mejor es el modelo. Al ser un $R^2$ penalizado, este es inferior que el $R^2$.
 
@@ -672,7 +686,7 @@ $$
 \text{BIC} = T\log\left(\frac{\text{SSE}}{T}\right) + (k+2)\log(T).
 $$
 
-- Para hacer pronosticos, nos intereza verificar la presición del modelo usando los errores de estimación $\varepsilon_t = y_t - \hat{y}_t$. Para ello, verificamos qué tanto se equica mi modelo con los datos, donde vamos a seleccionar el modelo con el menor error posible. **En la práctica necesitamos dividir la serie en un segmento para estimar el modelo y otro para verificar el rendimiento.**
+- Para hacer pronósticos, nos interesa verificar la precisión del modelo usando los errores de estimación $\varepsilon_t = y_t - \hat{y}_t$. Para ello, verificamos qué tanto se equica mi modelo con los datos, donde vamos a seleccionar el modelo con el menor error posible. **En la práctica necesitamos dividir la serie en un segmento para estimar el modelo y otro para verificar el rendimiento.**
 
 ![](src/img/traintest-1.png)
 
@@ -684,9 +698,9 @@ $$
 q_{j} = \frac{\displaystyle e_{j}}{\displaystyle\frac{1}{T-1}\sum_{t=2}^T |y_{t}-y_{t-1}|} \\
 \text{MASE} = \text{mean}(|q_{j}|)
 $$
-- Raíz del error cuadrárico escalado (RMASE= : $\text{RMSSE} = \sqrt{\text{mean}(q_{j}^2)}$
+- Raíz del error cuadrático escalado (RMSSE) : $\text{RMSSE} = \sqrt{\text{mean}(q_{j}^2)}$
 
-- Una técnica más avanzada es la validación cruzada (CV), donde el objetivo es mover el punto de cohorte del modelo e ir verificando el rendimiento en el conjunto de datos posterior. Luego se promedia un estadístico de precesición del pronostico (usualmente MAE):
+- Una técnica más avanzada es la validación cruzada (CV), donde el objetivo es mover el punto de cohorte del modelo e ir verificando el rendimiento en el conjunto de datos posterior. Luego se promedia un estadístico de precisión del pronóstico (usualmente MAE):
 
 ![](src/img/cv1-1.png)
 
@@ -694,8 +708,21 @@ $$
 - Repita el paso 1 para cada $t=1,\dots,T$.
 - Calcule el MSE (Error Cuadrático Medio) a partir de $e_{1}^*,\dots,e_{T}^*$​. A este resultado lo llamaremos CV.
 
-## Ejercicio 6:
+## Ejercicio 4:
 
 - Usando el modelo macroeconómico del cambio en el consumo de Estados Unidos, compara el rendimiento de todas la combinaciones (16 modelos en total) de covariables disponibles en términos de $Ingreso_t$, $Industria_t$, $Ahorro_t$, $Desempleo_t$​.
 - Calcular : AIC, BIC, CV, RMSE, MAE,	MAPE, MASE para cada modelo.
 - Finalmente, compare los resultados y seleccione el mejor modelo.
+
+## Resumen
+
+- La regresión lineal, estimada por MCO, permite modelar y pronosticar una serie de tiempo a partir de su relación con otras variables.
+- El estimador MCO es insesgado, de varianza mínima y consistente **si y solo si** se cumplen sus supuestos (linealidad, homocedasticidad, no autocorrelación, exogeneidad, no colinealidad perfecta).
+- En datos temporales, la autocorrelación de los residuos es la violación más común: se diagnostica con ACF, Durbin-Watson y Ljung-Box, y se corrige agregando rezagos, diferenciando o incluyendo variables estacionales.
+- Predictores como la tendencia, las variables dummy estacionales y las series de Fourier permiten capturar el comportamiento temporal dentro de un modelo lineal.
+- La selección del mejor modelo combina criterios de ajuste penalizado ($\bar R^2$, AIC, BIC) con medidas de error de pronóstico fuera de muestra (RMSE, MAE, MAPE, MASE) y validación cruzada.
+
+## Referencias
+
+- Greene, W. H. (2012). *Econometric Analysis* (7th ed.). Pearson.
+- Hyndman, R. J., & Athanasopoulos, G. (2021). *Forecasting: Principles and Practice* (3rd ed.). OTexts. [otexts.com/fpp3](https://otexts.com/fpp3)
