@@ -42,59 +42,16 @@ title-slide-attributes:
 - d = orden de diferenciación
 - q = orden de medias móviles
 
+Antes de introducir los modelos ARIMA, debemos analizar primero el concepto de **estacionariedad y la técnica de diferenciación de series temporales**.
+
 ## Contenido
 
-1. **Proceso Estocástico y Estacionariedad**
-2. **Modelos AR(p)** - Procesos Autoregresivos
-3. **Modelos MA(q)** - Medias Móviles
+1. **Proceso estocástico y estacionariedad**
+2. **Modelos MA(q)** - Medias Móviles
+3. **Modelos AR(p)** - Procesos Autoregresivos
 4. **Modelos ARMA(p,q)** - Combinación
 
 # Conceptos Fundamentales
-
-## Proceso Estocástico
-
-- Un **proceso estocástico** $\{Y_t\}$ es una colección de **variables aleatorias** indexadas en el tiempo.
-$$
-{y_1, y_2, \dots, y_T}
-$$
-
-- Considere por ejemplo una colección $T$ de valores $\varepsilon_t$ aleatorios e independientes idénticamente distribuidas
-
-$$
-{\varepsilon_1, \varepsilon_3, \dots, \varepsilon_T} \\
-\varepsilon_t \sim N(0, \sigma^2)
-$$
-
-```{python}
-import numpy as np
-import matplotlib.pyplot as plt
-
-t_sim = np.arange(100)  # 100 pasos
-n_series = range(1, 4)     # 3 series (1, 2, 3)
-random_y = {}
-
-for i in n_series:
-    y_t = []
-    for t in range(len(t_sim)):
-        e = np.random.normal(0, 1)
-        if t == 0:
-            y_t.append(e)
-        else:
-            y_t.append(y_t[t - 1] + e)
-    random_y[f"y_{i}"] = y_t
-
-# 2. Graficamos
-fig, ax = plt.subplots(figsize=(10, 5))
-for key, value in random_y.items():
-    ax.plot(t_sim, value, label=key)
-ax.set_title('Distintas realizaciones Y_t')
-ax.set_xlabel('Tiempo')
-ax.set_ylabel('y_t')
-ax.legend()
-ax.grid(True, alpha=0.3)
-plt.show()
-
-```
 
 ## Estacionariedad
 
@@ -102,10 +59,11 @@ plt.show()
 La estacionariedad significa que las propiedades estadísticas (media, varianza, etc) **permanecen constantes a lo largo del tiempo**, por lo que las series temporales con tendencias o estacionalidad no son estacionarias.
 :::
 
+
 **¿Por qué es importante?**
 
 ::: {.incremental}
-- Los modelos ARMA requieren estacionariedad
+- Los modelos ARIMA requieren estacionariedad (media constante)
 - Propiedades estadísticas constantes en el tiempo
 - Permite hacer inferencia y pronóstico
 :::
@@ -115,15 +73,26 @@ La estacionariedad significa que las propiedades estadísticas (media, varianza,
 ![](src/img/stationary-1.png){width="900px"}
 
 
+## Nota series estacionarias
+
+::: {.callout-important}
+
+Algunos casos pueden resultar confusos: una serie temporal con **comportamiento cíclico (pero sin tendencia ni estacionalidad) es estacionaria.** Esto se debe a que los **ciclos no tienen una duración fija**, por lo que, antes de observar la serie, no podemos estar seguros de dónde se encontrarán los picos y los valles de los ciclos.
+
+En general, una **serie temporal estacionaria no presentará patrones predecibles a largo plazo.** Los gráficos de la serie mostrarán una trayectoria aproximadamente horizontal (aunque es posible cierto comportamiento cíclico), con una varianza constante.
+
+:::
+
 ## Detectar las series no estacionarias
 
 Existen varios métodos para evaluar si una serie temporal es estacionaria o no estacionaria:
 
-- Inspección visual de la serie temporal: inspeccionando visualmente el gráfico de la serie temporal, es posible identificar la presencia de una tendencia o estacionalidad notables. Si se observan estos patrones, es probable que la serie no sea estacionaria.
+- **Inspección visual de la serie temporal:** inspeccionando visualmente el gráfico de la serie temporal, es posible identificar la presencia de una tendencia o estacionalidad notables. Si se observan estos patrones, es probable que la serie no sea estacionaria.
+    - ACF : series estacionarias rápidamente converge a cero. Por lo contrario, series **no estacionarias decrecen lentamente.**
 
-- Valores estadísticos: calcular estadísticos como la media y la varianza, de varios segmentos de la serie. Si existen diferencias significativas, la serie no es estacionaria.
+- **Valores estadísticos:** calcular estadísticos como la media y la varianza, de varios segmentos de la serie. Si existen diferencias significativas, la serie no es estacionaria.
 
-- Pruebas estadísticas: utilizar test estadísticos como la prueba Dickey-Fuller aumentada o la prueba Kwiatkowski-Phillips-Schmidt-Shin (KPSS).
+- **Pruebas estadísticas:** utilizar test estadísticos como la prueba Dickey-Fuller aumentada o la prueba Kwiatkowski-Phillips-Schmidt-Shin (KPSS).
 
 ## Diferenciación
 
@@ -220,75 +189,16 @@ $$
  - Si bien ambas pruebas se utilizan para comprobar la estacionariedad:
 
 - La prueba KPSS se centra en la presencia de tendencias. Un p-value bajo indica la no estacionariedad debida a una tendencia.
-- La prueba ADF se centra en la presencia de una raíz unitari. Un p-value bajo indica que la serie temporal no tiene una raíz unitaria, lo que sugiere que podría ser estacionaria.
+- La prueba ADF se centra en la presencia de una raíz unitaria. Un p-value bajo indica que la serie temporal no tiene una raíz unitaria, lo que sugiere que podría ser estacionaria.
 
 - Es habitual utilizar ambas pruebas a la vez para comprender mejor las propiedades de estacionariedad de una serie temporal. 
 :::
 
-## Modelo de caminata aleatoria
-
-- El modelo de Caminata Aleatoria (o Random Walk) es uno de los conceptos pilares en el análisis de series de tiempo, especialmente en finanzas y econometría. Se utiliza para describir procesos donde el valor de una variable en el tiempo t depende únicamente de su valor anterior más un componente impredecible (ruido blanco).
-
-$$
-y_t = y_{t-1} + \varepsilon_t.
-$$
-
-
-Los modelos de caminata aleatoria se utilizan ampliamente para datos no estacionarios, en particular datos financieros y económicos. La caminata aleatoria suelen presentar:
-
-- No Estacionariedad: Una caminata aleatoria es el ejemplo clásico de una serie no estacionaria. Su varianza aumenta con el tiempo, lo que significa que a largo plazo la serie se aleja de su origen.
-- Cambios de dirección: Largos periodos de aparentes tendencias al alza o a la baja repentinos e impredecibles
-- Memoria Infinita: Cada choque aleatorio εt​ persiste para siempre en el nivel de la serie. No hay un "regreso a la media".
-- Raíz Unitaria: Si aplicamos la prueba de Dickey-Fuller Aumentada que vimos antes, el coeficiente "\gamma" sería igual a 0, confirmando que la serie tiene una raíz unitaria.
-
-- Los pronósticos de un modelo $y_t$ de paseo aleatorio **son iguales a la última observación**, ya que los movimientos futuros son impredecibles y tienen la misma probabilidad de ser al alza o a la baja. Por lo tanto, el modelo de paseo aleatorio sustenta los pronósticos ingenuos.
-
-```{python}
-import numpy as np
-import matplotlib.pyplot as plt
-
-t_sim = np.arange(100)  # 100 pasos
-n_series = range(1, 4)     # 3 series (1, 2, 3)
-random_y = {}
-
-for i in n_series:
-    y_t = []
-    for t in range(len(t_sim)):
-        e = np.random.normal(0, 1)
-        if t == 0:
-            y_t.append(e)
-        else:
-            y_t.append(y_t[t - 1] + e)
-    random_y[f"y_{i}"] = y_t
-
-# 2. Graficamos
-fig, ax = plt.subplots(figsize=(10, 5))
-for key, value in random_y.items():
-    ax.plot(t_sim, value, label=key)
-ax.set_title('Distintas realizaciones de Caminata Aleatoria Y_t')
-ax.set_xlabel('Tiempo')
-ax.set_ylabel('y_t')
-ax.legend()
-ax.grid(True, alpha=0.3)
-plt.show()
-
-```
-
-## Ejercicio 1. Identificar estacionariedad
-
-- Descarga la serie del PIB de Colombia anual y la serie de acciones diarias de Google. A ambas vas a realizar:
-
-- Gráfica la serie temporal.
-- Calcula estadísticas descriptivas básicas.
-- Realiza el ACF diagnostico de la serie.
-- Realiza el test de Dickey-Fuller Aumentado (ADF) para verificar estacionariedad.
-- Interpret el resultado del test ADF: ¿Es la serie estacionaria?
-- Corregir si no es estacionaria con la diferenciación.
-
 ## Concepto de proceso ruido blanco
 
 ::: {.callout-note}
-El ruido blanco (White Noise) representa la parte de los datos que es puramente aleatoria e impredecible. Es el "residuo ideal" que buscamos obtener después de ajustar un modelo, ya que significa que el modelo ha extraído toda la información útil de la serie de tiempo.
+- El ruido blanco (White Noise) es una serie de tiempo que **no muestra autocorrelación** o una autocorrelación **cercana a cero**. Representa la parte de los datos que es puramente aleatoria.
+- Por definición el **proceso ruido blanco es estacionario**.
 :::
 
 ### Definición matemática
@@ -341,6 +251,67 @@ print(f"Media : {np.mean(white_noise)}")
 print(f"Varianza : {np.var(white_noise)}")
 ```
 
+## Modelo de caminata aleatoria
+
+- El modelo de Caminata Aleatoria (o Random Walk) es uno de los conceptos pilares en el análisis de series de tiempo, especialmente en finanzas y econometría. Se utiliza para describir procesos donde el valor de una variable en el tiempo t depende únicamente de su valor anterior más un componente impredecible (ruido blanco).
+
+$$
+y_t = y_{t-1} + \varepsilon_t.
+$$
+
+
+Los modelos de caminata aleatoria se utilizan ampliamente para datos no estacionarios, en particular datos financieros y económicos. La caminata aleatoria suelen presentar:
+
+- No Estacionariedad: Una caminata aleatoria es el ejemplo clásico de una serie no estacionaria. Su varianza aumenta con el tiempo, lo que significa que a largo plazo la serie se aleja de su origen.
+- Cambios de dirección: Largos periodos de aparentes tendencias al alza o a la baja repentinos e impredecibles
+- Memoria Infinita: Cada choque aleatorio $\varepsilon_t$​ persiste para siempre en el nivel de la serie. No hay un "regreso a la media".
+- Raíz Unitaria: Si aplicamos la prueba de Dickey-Fuller Aumentada que vimos antes, el coeficiente $\gamma$ sería igual a 0, confirmando que la serie tiene una raíz unitaria.
+
+- Los pronósticos de un modelo $y_t$ de paseo aleatorio **son iguales a la última observación**, ya que los movimientos futuros son impredecibles y tienen la misma probabilidad de ser al alza o a la baja. Por lo tanto, el modelo de paseo aleatorio sustenta los pronósticos ingenuos.
+
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+t_sim = np.arange(100)  # 100 pasos
+n_series = range(1, 4)     # 3 series (1, 2, 3)
+random_y = {}
+
+for i in n_series:
+    y_t = []
+    for t in range(len(t_sim)):
+        e = np.random.normal(0, 1)
+        if t == 0:
+            y_t.append(e)
+        else:
+            y_t.append(y_t[t - 1] + e)
+    random_y[f"y_{i}"] = y_t
+
+# 2. Graficamos
+fig, ax = plt.subplots(figsize=(10, 5))
+for key, value in random_y.items():
+    ax.plot(t_sim, value, label=key)
+ax.set_title('Distintas realizaciones de Caminata Aleatoria Y_t')
+ax.set_xlabel('Tiempo')
+ax.set_ylabel('y_t')
+ax.legend()
+ax.grid(True, alpha=0.3)
+plt.show()
+
+```
+
+## Ejercicio 1. Identificar estacionariedad
+
+- Descarga la serie del PIB de Colombia anual y la serie del precio de las acciones diarias de Google. A ambas series vas a realizar:
+
+- Gráfica la serie temporal.
+- Calcula estadísticas descriptivas básicas.
+- Realiza el ACF diagnostico de la serie.
+- Realiza el test de Dickey-Fuller Aumentado (ADF) para verificar estacionariedad.
+- Interpreta el resultado del test ADF: ¿Es la serie estacionaria?
+- Corrige si no es estacionaria con la diferenciación.
+
 # Modelos MA(q)
 
 ## MA de Primer Orden
@@ -356,7 +327,7 @@ $$
 
 **Propiedades**:
 
-- Media: $E[Y_t] = 0$
+- Media: $E[Y_t] = \mu$
 - Varianza: $Var(Y_t) = \sigma^2(1+\theta^2)$
 - Autocovarianza:
     - $E(Y_t - \mu)(Y_{t-1} - \mu) = \theta \sigma^2$
@@ -407,6 +378,25 @@ donde $\theta_0 = 1$.
 
 > **Regla práctica**: Si ACF tiene corte claro en rezago q y PACF decae → MA(q)
 
+## Invertibilidad de MA(q)
+
+- Usando el operador de rezago $L$, el proceso MA(q) se escribe como:
+$$
+Y_t = \mu + (1 + \theta_1 L + \theta_2 L^2 + ... + \theta_q L^q)\varepsilon_t = \mu + \theta(L)\varepsilon_t
+$$
+
+::: {.callout-important}
+Un proceso MA(q) es **invertible** si y solo si todas las raíces del polinomio característico $\theta(z) = 0$ están **fuera** del círculo unitario.
+:::
+
+**¿Por qué importa?**
+
+- La invertibilidad garantiza que exista una **única** representación MA(q) para una función de autocovarianzas dada (sin ella, distintos $\theta$ producen la misma ACF).
+- Permite expresar el proceso como un AR(∞): $\varepsilon_t$ queda escrito en función de los valores pasados de $Y_t$, lo cual es necesario para poder estimar los residuos y ajustar el modelo.
+
+**Ejemplo MA(1)**: $Y_t = \mu + \varepsilon_t + \theta \varepsilon_{t-1}$
+
+- Invertible si $|\theta| < 1$
 
 ## Simulación
 
@@ -547,8 +537,8 @@ ar2_params = np.array([1, -0.5, -0.25])
 process_ar2 = ArmaProcess(ar2_params, ma_params)
 
 # Ejecutar visualizaciones
-plot_proceso_ar(process_ar1, "AR(1) con $\phi=0.7$")
-plot_proceso_ar(process_ar2, "AR(2) con $\phi=[0.5, 0.25]$")
+plot_proceso_ar(process_ar1, "AR(1) con $\\phi=0.7$")
+plot_proceso_ar(process_ar2, "AR(2) con $\\phi=[0.5, 0.25]$")
 ```
 
 ## Operador de Rezagos
@@ -557,8 +547,8 @@ plot_proceso_ar(process_ar2, "AR(2) con $\phi=[0.5, 0.25]$")
 - El modelo AR(2) se puede escribir como:
 $$
 Y_t = \phi_1 Y_{t-1} + \phi_2 Y_{t-2} + \varepsilon_t \\
-Y_t = \phi_1 L + \phi_2 L^2 + \varepsilon_t \\
-(1 - \phi_1 L - \phi_2 L ^2) Y_t = c + \varepsilon_t
+Y_t = \phi_1 L Y_t + \phi_2 L^2 Y_t + \varepsilon_t \\
+(1 - \phi_1 L - \phi_2 L ^2) Y_t = \varepsilon_t
 $$
 
 **Polinomio característico**: $1 - \phi_1 z - \phi_2 z^2 = 0$
