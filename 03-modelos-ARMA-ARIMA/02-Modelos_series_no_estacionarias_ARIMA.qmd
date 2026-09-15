@@ -155,6 +155,70 @@ $$
 
 - La transformación logarítmica ($\lambda=0$) es la más frecuente en economía porque permite interpretar los cambios en la serie como tasas de crecimiento porcentual.
 
+$$
+\Delta \ln(y_t) = \ln(y_t) - \ln(y_{t-1}) \approx \frac{y_t - y_{t-1}}{y_{t-1}}
+$$
+
+- La diferencia del logaritmo aproxima la tasa de crecimiento porcentual de $y_t$ entre $t-1$ y $t$.
+
+## Ejemplo: $\Delta \ln(y_t)$ vs. tasa de crecimiento porcentual
+
+```{python}
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+n = 60
+tasas_crecimiento = np.random.normal(0.02, 0.05, n)
+y = pd.Series(
+    100 * np.cumprod(1 + tasas_crecimiento),
+    index=pd.date_range("2015-01-01", periods=n, freq="QE"),
+)
+
+log_diff = np.log(y).diff()
+pct_change = y.pct_change()
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+# Comparación en el tiempo
+axes[0].plot(
+    pct_change.index,
+    pct_change,
+    label=r"$(y_t - y_{t-1})/y_{t-1}$",
+    color="steelblue",
+    marker="o",
+)
+axes[0].plot(
+    log_diff.index,
+    log_diff,
+    label=r"$\Delta \ln(y_t)$",
+    color="darkorange",
+    linestyle="--",
+    marker="x",
+)
+axes[0].axhline(0, color="black", linewidth=0.8)
+axes[0].set_title("Comparación en el tiempo")
+axes[0].set_xlabel("Tiempo")
+axes[0].set_ylabel("Tasa de cambio")
+axes[0].legend()
+
+# Dispersión: una medida contra la otra
+axes[1].scatter(pct_change, log_diff, color="teal", alpha=0.7)
+lims = [min(pct_change.min(), log_diff.min()), max(pct_change.max(), log_diff.max())]
+axes[1].plot(lims, lims, color="red", linestyle="--", label="y = x")
+axes[1].set_title(r"$\Delta \ln(y_t)$ vs. $(y_t - y_{t-1})/y_{t-1}$")
+axes[1].set_xlabel(r"$(y_t - y_{t-1})/y_{t-1}$")
+axes[1].set_ylabel(r"$\Delta \ln(y_t)$")
+axes[1].legend()
+
+plt.tight_layout()
+plt.show()
+```
+
+- Para variaciones pequeñas entre periodos, ambas medidas son prácticamente idénticas (los puntos caen sobre la línea $y=x$).
+- La diferencia entre ambas crece con la magnitud del cambio, ya que $\Delta \ln(y_t)$ es una aproximación de primer orden de la tasa de crecimiento porcentual.
+
 ## Ejercicio 1. Pronostico del PIB de Colombia.
 
 - Usando los datos del Banco Mundial, estime un modelo ARIMA válido acorde a la teoría entre 1960-2024. Finalmente, realice el pronostico del PIB de Colombia para los próximos 5 años.
@@ -182,8 +246,8 @@ $$
 
 - **Paso 2: Sustituir $t$ por $T+1$ para el primer pronóstico**
 $$
-y_{T+1} =  (1 + \phi) y_{T + 1 - 1 } - \phi  y_{T + 1 - 2} + \varepsilon_{T + 1 + 1} + \theta \varepsilon_{T + 1 - 1} \\
-y_{T+1} =  (1 + \phi ) y_{T} - \phi  y_{T - 1} + \varepsilon_{T + 2} + \theta \varepsilon_{T}
+y_{T+1} =  (1 + \phi) y_{T + 1 - 1 } - \phi  y_{T + 1 - 2} + \varepsilon_{T + 1} + \theta \varepsilon_{T + 1 - 1} \\
+y_{T+1} =  (1 + \phi ) y_{T} - \phi  y_{T - 1} + \varepsilon_{T + 1} + \theta \varepsilon_{T}
 $$
 
 - **Paso 3: Aplicar supuestos los errores $\varepsilon_{T + h} = 0$**
@@ -222,7 +286,7 @@ $$
 - Reemplazamos $T+2$ por $t$ en la ecuación de pronostico de ARIMA(1, 1, 1)  así:
 $$
 y_t =  (1 + \phi)y_{t-1} - \phi  y_{t-2} + \varepsilon_t + \theta \varepsilon_{t - 1} \\
-y_{T+2} =  (1 + \phi) y_{T + 2 - 1 } - \phi  y_{T + 2 - 2} + \varepsilon_{T + 2 + 1} + \theta \varepsilon_{T + 2 - 1} \\
+y_{T+2} =  (1 + \phi) y_{T + 2 - 1 } - \phi  y_{T + 2 - 2} + \varepsilon_{T + 2} + \theta \varepsilon_{T + 2 - 1} \\
 y_{T+2} =  (1 + \phi ) y_{T + 1} - \phi  y_{T} + \varepsilon_{T + 3} + \theta \varepsilon_{T + 1}
 $$
 
@@ -271,11 +335,37 @@ print(f"Pronóstico T+1 con ecuación de pronóstico : {forecast_formula}")
 
 ## Comparación de Modelos
 
-**Métricas de error**:
+**Criterios de información (dentro de muestra)**: penalizan modelos con más parámetros $k$; se usan para comparar modelos con la **misma** variable dependiente. Menor valor = mejor modelo.
+
+- **AIC**: $-2\log(L) + 2k$
+- **BIC**: $-2\log(L) + k\log(n)$
+
+**Métricas de error (fuera de muestra)**: requieren separar los datos en entrenamiento/prueba para evaluar la capacidad real de pronóstico del modelo.
 
 - **MAE** (Mean Absolute Error): $\frac{1}{n}\sum|y_i - \hat{y}_i|$
 - **RMSE** (Root Mean Squared Error): $\sqrt{\frac{1}{n}\sum(y_i - \hat{y}_i)^2}$
 - **MAPE** (Mean Absolute Percentage Error): $\frac{100}{n}\sum\frac{|y_i - \hat{y}_i|}{|y_i|}$
+- **MASE** (Mean Absolute Scaled Error): $\frac{1}{n}\sum\frac{|y_i - \hat{y}_i|}{\frac{1}{n-1}\sum|y_t - y_{t-1}|}$, evita los problemas de MAPE cuando $y_i \approx 0$.
+
+## Ejemplo: métricas del modelo ARIMA(1,1,1)
+
+```{python}
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+
+y_hat = modelo_arima.fittedvalues
+mae = mean_absolute_error(y, y_hat)
+rmse = np.sqrt(mean_squared_error(y, y_hat))
+mape = np.mean(np.abs((y - y_hat) / y)) * 100
+escala_mase = np.mean(np.abs(np.diff(y)))  # error del pronóstico ingenuo
+mase = mae / escala_mase
+
+print(f"AIC: {modelo_arima.aic:.2f}")
+print(f"BIC: {modelo_arima.bic:.2f}")
+print(f"MAE: {mae:.3f}")
+print(f"RMSE: {rmse:.3f}")
+print(f"MAPE: {mape:.2f}%")
+print(f"MASE: {mase:.3f}")
+```
 
 
 ## Referencias
