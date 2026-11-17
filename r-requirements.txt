@@ -18,6 +18,7 @@ forecast
 zoo
 xts
 tseries
+FinTS
 moments
 
 # paquetes de machine learning y deep learning
@@ -35,7 +36,7 @@ torch
 
 # paquetes datos
 wbstats
-quantmod
+tidyquant
 nycflights13
 gapminder
 Lahman
@@ -49,3 +50,4 @@ renv
 knitr
 rmarkdown
 GGally
+caret

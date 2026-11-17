@@ -12,6 +12,7 @@ Este curso, del Programa de Ciencia de Datos de la Escuela de Transformación Di
 ### 1. Introducción a los modelos de regresión y series de tiempo
 - [Presentación: Introducción a los modelos de regresión y series de tiempo](https://fersalme.github.io/regresion-lineal-series-tiempo/01-introduccion-curso/01-introduccion.html#/title-slide)
 - [Notebook: Introducción a series de tiempo](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/01-introduccion-curso/02-introduccion-seires-tiempo.ipynb)
+- [Notebook: Introducción a series de tiempo en R](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/01-introduccion-curso/02-introduccion-series-tiempo-R.ipynb)
 
 ### 2. Fundamentos de regresión y modelos estacionarios
 - [Presentación: Fundamentos de regresión y modelos estacionarios](https://fersalme.github.io/regresion-lineal-series-tiempo/02-fundamentos-regresion-modelos-estocasticos/01-presentacion.html#/title-slide)
@@ -25,6 +26,9 @@ Este curso, del Programa de Ciencia de Datos de la Escuela de Transformación Di
 - [Notebook: Ejercicios ARIMA en Python](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/03-modelos-ARMA-ARIMA/01-ejercicios-ARIMA-Python.ipynb)
 - [Notebook: Ejercicios SARIMA en Python](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/03-modelos-ARMA-ARIMA/02-ejercicios-SARIMA-Python.ipynb)
 - [Notebook: Ejercicios ARIMAX en Python](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/03-modelos-ARMA-ARIMA/03-ejercicios-ARIMAX-Python.ipynb)
+- [Notebook: Ejercicios ARIMA en R](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/03-modelos-ARMA-ARIMA/01-ejercicios-ARIMA-R.ipynb)
+- [Notebook: Ejercicios SARIMA en R](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/03-modelos-ARMA-ARIMA/02-ejercicios-SARIMA-R.ipynb)
+- [Notebook: Ejercicios ARIMAX en R](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/03-modelos-ARMA-ARIMA/03-ejercicios-ARIMAX-R.ipynb)
 
 ### 4. Modelos de series temporales no estacionarias
 - *En construcción.*
@@ -37,6 +41,7 @@ Este curso, del Programa de Ciencia de Datos de la Escuela de Transformación Di
 ### 6. Modelos de volatilidad (ARCH/GARCH)
 - [Presentación: Modelos GARCH y volatilidad](https://fersalme.github.io/regresion-lineal-series-tiempo/06-modelos-GARCH/01-modelos-GARCH.html#/title-slide)
 - [Notebook: Ejercicios ARCH/GARCH en Python](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/06-modelos-GARCH/01-ejercicios-ARCH-GARCH-Python.ipynb)
+- [Notebook: Ejercicios ARCH/GARCH en R](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/06-modelos-GARCH/01-ejercicios-ARCH-GARCH-R.ipynb)
 - [App Shiny: Simulación de procesos GARCH](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/06-modelos-GARCH/app_simulacion-garch.py)
 
 ### 7. Identificación, estimación y diagnóstico de modelos
@@ -45,11 +50,14 @@ Este curso, del Programa de Ciencia de Datos de la Escuela de Transformación Di
 ### 8. Modelos de intervención y detección de valores atípicos
 - [Presentación: Modelos de intervención y detección de valores atípicos](https://fersalme.github.io/regresion-lineal-series-tiempo/08-modelos-intervencion-datos-atipicos/01-modelos-intervencion-anomalias.html#/title-slide)
 - [Notebook: Modelos de intervención y anomalías](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/08-modelos-intervencion-datos-atipicos/01-modelos-intervencion-anomalias.ipynb)
+- [Notebook: Modelos de intervención y anomalías en R](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/08-modelos-intervencion-datos-atipicos/01-modelos-intervencion-anomalias-R.ipynb)
 
 ### 9. Modelos de predicción avanzados con IA: LSTM y Prophet
 - [Presentación: Prophet y LSTM](https://fersalme.github.io/regresion-lineal-series-tiempo/09-modelos-LSTM-prophet/03-red-neuronal-LSTM-Prophet.html#/title-slide)
 - [Notebook: Ejercicios Prophet en Python](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/09-modelos-LSTM-prophet/03-ejercicios-Prophet-Python.ipynb)
 - [Notebook: Ejercicios LSTM en Python](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/09-modelos-LSTM-prophet/03-ejercicios-LSTM-Python.ipynb)
+- [Notebook: Ejercicios Prophet en R](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/09-modelos-LSTM-prophet/03-ejercicios-Prophet-R.ipynb)
+- [Notebook: Ejercicios LSTM y NNETAR en R](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/09-modelos-LSTM-prophet/03-ejercicios-LSTM-R.ipynb)
 
 ### 10. Proyecto final integrador
 - Proyecto colaborativo de regresión y series de tiempo en R o Python.
