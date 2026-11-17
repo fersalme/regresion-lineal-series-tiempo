@@ -22,13 +22,14 @@ moments
 
 # paquetes de machine learning y deep learning
 prophet
+fable.prophet
 randomForest
 xgboost
 lightgbm
 e1071
 mlr3verse
 tidymodels
-keras
+keras3
 tensorflow
 torch
 

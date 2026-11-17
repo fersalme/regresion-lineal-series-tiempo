@@ -48,8 +48,8 @@ Este curso, del Programa de Ciencia de Datos de la Escuela de Transformación Di
 
 ### 9. Modelos de predicción avanzados con IA: LSTM y Prophet
 - [Presentación: Prophet y LSTM](https://fersalme.github.io/regresion-lineal-series-tiempo/09-modelos-LSTM-prophet/03-red-neuronal-LSTM-Prophet.html#/title-slide)
-- [Notebook: Ejercicios LSTM y Prophet](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/09-modelos-LSTM-prophet/03-ejercicios-LSTM-Prophet.ipynb)
-- [Notebook: Ejercicios LSTM en Python](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/09-modelos-LSTM-prophet/03_ejercicios_LSTM_Python.ipynb)
+- [Notebook: Ejercicios Prophet en Python](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/09-modelos-LSTM-prophet/03-ejercicios-Prophet-Python.ipynb)
+- [Notebook: Ejercicios LSTM en Python](https://github.com/fersalme/regresion-lineal-series-tiempo/blob/main/09-modelos-LSTM-prophet/03-ejercicios-LSTM-Python.ipynb)
 
 ### 10. Proyecto final integrador
 - Proyecto colaborativo de regresión y series de tiempo en R o Python.
